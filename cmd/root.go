@@ -4,10 +4,52 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"bufio"
+	"fmt"
 	"os"
+	"os/exec"
+	"runtime"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
+
+var commands = map[string]interface{}{
+	"add":   addFlashCard,
+	"clear": clearScreen,
+}
+
+func addFlashCard() {
+	fmt.Println("Add flash card")
+}
+
+func clearScreen() {
+	var cmd *exec.Cmd
+	switch runtime.GOOS {
+	case "windows":
+		cmd = exec.Command("cmd", "/c", "cls")
+	case "linux", "darwin": // darwin is for macOS
+		cmd = exec.Command("clear")
+	default:
+		fmt.Println("Unsupported platform")
+		return
+	}
+
+	cmd.Stdout = os.Stdout
+	if err := cmd.Run(); err != nil {
+		fmt.Printf("Error clearing screen: %v\n", err)
+	}
+}
+
+func printPrompt() {
+	fmt.Print("clfashcards", "> ")
+}
+
+func parseInput(text string) []string {
+	cleaned_text := strings.TrimSpace(strings.ToLower(text))
+	text_list := strings.Fields(cleaned_text)
+	return text_list
+}
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -21,7 +63,22 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+	Run: func(cmd *cobra.Command, args []string) {
+		reader := bufio.NewScanner((os.Stdin))
+		printPrompt()
+		for reader.Scan() {
+			// fmt.Println(commands)
+			text_list := parseInput(reader.Text())
+			if command, exists := commands[text_list[0]]; exists {
+				// Call a hardcoded function
+				command.(func())()
+			} else if strings.EqualFold(".exit", text_list[0]) {
+				// Close the program on the exit command
+				return
+			}
+			printPrompt()
+		}
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
