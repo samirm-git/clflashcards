@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"os/exec"
 )
 
 func writeQ(scanner bufio.Scanner) (string, error) {
@@ -57,4 +58,57 @@ func listFlashcards() {
 		return
 	}
 	fmt.Println("Flashcards:\n", string(content))
+}
+
+func runCreate(question, answer string) {
+	if question == "" || answer == "" {
+		scanner := bufio.NewScanner(os.Stdin)
+		for {
+			var err error
+			question, err = writeQ(*scanner)
+			if err != nil || checkQuit(question) {
+				break
+			}
+
+			answer, err = writeA(*scanner)
+			if err != nil || checkQuit(answer) {
+				break
+			}
+
+			saveFlashcard(question, answer)
+		}
+	} else {
+		saveFlashcard(question, answer)
+	}
+}
+
+func runEditFile(fname string) {
+	fname = parsefname(fname)
+	f, err := os.OpenFile(fname, os.O_CREATE, 0644)
+	if err != nil {
+		fmt.Println("Error creating file:", err)
+		return
+	}
+	f.Close()
+
+	cmd := exec.Command("vim", fname)
+
+	// Connect Vim to your terminal's stdin/stdout/stderr
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	// Run Vim and wait until user exits
+	err = cmd.Run()
+	if err != nil {
+		fmt.Println("Error running vim:", err)
+		return
+	}
+
+	fmt.Println("Editing finished!")
+
+	if fname == "" {
+
+	}
+	// openInEditor(fname)
 }

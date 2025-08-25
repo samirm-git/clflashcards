@@ -1,11 +1,9 @@
 package main
 
 import (
-	"bufio"
 	"flag"
 	"fmt"
 	"os"
-	"os/exec"
 )
 
 type Config struct {
@@ -19,6 +17,7 @@ func main() {
 	// 	os.Exit(1)
 	// }
 	// Define command-line flags
+
 	createCmd := flag.NewFlagSet("create", flag.ExitOnError)
 	question := createCmd.String("q", "", "Question for the flashcard")
 	answer := createCmd.String("a", "", "Answer for the flashcard")
@@ -41,67 +40,18 @@ func main() {
 		createCmd.Parse(os.Args[2:])
 		fmt.Println("q", *question)
 		fmt.Println("a", *answer)
-		if *question == "" || *answer == "" {
-			scanner := bufio.NewScanner(os.Stdin)
-			for {
-				var err error
-				*question, err = writeQ(*scanner)
-				if err != nil {
-					fmt.Println("Error reading question: ", err)
-					break
-				} else if checkQuit(*question) {
-					break
-				}
 
-				*answer, err = writeA(*scanner)
-				if err != nil {
-					fmt.Println("Error reading answer: ", err)
-					break
-				} else if checkQuit(*answer) {
-					break
-				}
-				saveFlashcard(*question, *answer)
-			}
-		} else {
-			fmt.Println("question ", *question)
-			fmt.Println("answer ", *answer)
-			saveFlashcard(*question, *answer)
-		}
+		runCreate(*question, *answer)
 		os.Exit(1)
+
 	case "editFile":
 		editFileCmd.Parse(os.Args[2:])
-		*fname = parsefname(*fname)
-		fmt.Println("fname", *fname)
-		f, err := os.OpenFile(*fname, os.O_CREATE, 0644)
-		if err != nil {
-			fmt.Println("Error creating file:", err)
-			return
-		}
-		f.Close()
-
-		cmd := exec.Command("vim", *fname)
-
-		// Connect Vim to your terminal's stdin/stdout/stderr
-		cmd.Stdin = os.Stdin
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-
-		// Run Vim and wait until user exits
-		err = cmd.Run()
-		if err != nil {
-			fmt.Println("Error running vim:", err)
-			return
-		}
-
-		fmt.Println("Editing finished!")
-
-		if *fname == "" {
-
-		}
+		runEditFile(*fname)
 
 	case "list":
 		listCmd.Parse(os.Args[2:])
 		listFlashcards()
+
 	default:
 		fmt.Println("Unknown command")
 		os.Exit(1)
