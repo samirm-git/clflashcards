@@ -7,7 +7,7 @@ import (
 	"os/exec"
 )
 
-func writeQ(scanner bufio.Scanner) (string, error) {
+func getQ(scanner bufio.Scanner) (string, error) {
 	fmt.Println("Enter a question or 'quit' to quit")
 	printPrompt()
 	scanner.Scan()
@@ -19,8 +19,8 @@ func writeQ(scanner bufio.Scanner) (string, error) {
 	}
 }
 
-func writeA(scanner bufio.Scanner) (string, error) {
-	fmt.Println("Enter the enswer or 'quit' to quit")
+func getA(scanner bufio.Scanner) (string, error) {
+	fmt.Println("Enter the answer or 'quit' to quit")
 	printPrompt()
 	scanner.Scan()
 	if err := scanner.Err(); err != nil {
@@ -65,13 +65,22 @@ func runCreate(question, answer string) {
 		scanner := bufio.NewScanner(os.Stdin)
 		for {
 			var err error
-			question, err = writeQ(*scanner)
-			if err != nil || checkQuit(question) {
+			question, err = getQ(*scanner)
+
+			if err != nil {
+				fmt.Println("Error parsing question input. Please try again.", err)
+				continue
+
+			} else if checkQuit(question) {
 				break
 			}
 
-			answer, err = writeA(*scanner)
-			if err != nil || checkQuit(answer) {
+			answer, err = getA(*scanner)
+			if err != nil {
+				fmt.Println("Error parsing answer input. Please try again.", err)
+				continue
+
+			} else if checkQuit(answer) {
 				break
 			}
 
