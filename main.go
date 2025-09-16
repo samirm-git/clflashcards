@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 )
 
 type Config struct {
@@ -29,32 +31,75 @@ func main() {
 	listCmd := flag.NewFlagSet("list", flag.ExitOnError)
 
 	// Parse command-line arguments
-	fmt.Println(os.Args)
-	if len(os.Args) < 2 {
-		fmt.Println("Expected 'create' or 'editFile' or 'list' subcommands")
-		os.Exit(1)
+	if len(os.Args) > 2 {
+
+		switch os.Args[1] {
+		case "create":
+			createCmd.Parse(os.Args[2:])
+			fmt.Println("q", *question)
+			fmt.Println("a", *answer)
+
+			runCreate(*question, *answer)
+			os.Exit(1)
+
+		case "editFile":
+			editFileCmd.Parse(os.Args[2:])
+			runEditFile(*fname)
+
+		case "list":
+			listCmd.Parse(os.Args[2:])
+			listFlashcards()
+
+		default:
+			fmt.Println("Unknown command")
+			os.Exit(1)
+		}
+	} else {
+		REPLMode()
 	}
+}
 
-	switch os.Args[1] {
+func REPLMode() {
+
+	introPrint()
+	for {
+		printPrompt()
+		scanner := bufio.NewScanner(os.Stdin)
+		scanner.Scan()
+		if err := scanner.Err(); err != nil {
+			fmt.Println("Error getting command: ", err)
+			break
+		}
+
+		commandText := strings.TrimSpace(scanner.Text())
+
+		if commandText == "" {
+			continue
+		}
+		if checkQuit(commandText) {
+			break
+		}
+		parseCommand(commandText)
+	}
+}
+
+func parseCommand(commandText string) {
+	parts := strings.Fields(commandText)
+	command := parts[0] //PARSE CREATE NOT WORKING CAUSE THIS JUST PARSES EACH WORD. NEED TO HANDLE REPL MODE LINE BY LNE
+	args := parts[1:]
+
+	switch command {
 	case "create":
-		createCmd.Parse(os.Args[2:])
-		fmt.Println("q", *question)
-		fmt.Println("a", *answer)
-
-		runCreate(*question, *answer)
-		os.Exit(1)
+		runCreate(args[0], args[1])
 
 	case "editFile":
-		editFileCmd.Parse(os.Args[2:])
-		runEditFile(*fname)
+		runEditFile(args[0])
 
 	case "list":
-		listCmd.Parse(os.Args[2:])
 		listFlashcards()
 
 	default:
 		fmt.Println("Unknown command")
-		os.Exit(1)
 	}
 }
 

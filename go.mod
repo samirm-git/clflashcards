@@ -1,6 +1,6 @@
 module github.com/samirm-git/clflashcards
 
-go 1.23.0
+go 1.23
 
 require rsc.io/quote/v4 v4.0.1
 
