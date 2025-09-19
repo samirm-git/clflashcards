@@ -2,10 +2,12 @@ package main
 
 import (
 	"bufio"
-	"flag"
+	// "flag"
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/google/shlex"
 )
 
 type Config struct {
@@ -20,40 +22,8 @@ func main() {
 	// }
 	// Define command-line flags
 
-	createCmd := flag.NewFlagSet("create", flag.ExitOnError)
-	question := createCmd.String("q", "", "Question for the flashcard")
-	answer := createCmd.String("a", "", "Answer for the flashcard")
-
-	editFileCmd := flag.NewFlagSet("editFile", flag.ExitOnError)
-	// subject_dir := editFileCmd.String("s", "", "Subject directory for flashcards")
-	fname := editFileCmd.String("f", "", "Filename for flashcards")
-
-	listCmd := flag.NewFlagSet("list", flag.ExitOnError)
-
-	// Parse command-line arguments
-	if len(os.Args) > 2 {
-
-		switch os.Args[1] {
-		case "create":
-			createCmd.Parse(os.Args[2:])
-			fmt.Println("q", *question)
-			fmt.Println("a", *answer)
-
-			runCreate(*question, *answer)
-			os.Exit(1)
-
-		case "editFile":
-			editFileCmd.Parse(os.Args[2:])
-			runEditFile(*fname)
-
-		case "list":
-			listCmd.Parse(os.Args[2:])
-			listFlashcards()
-
-		default:
-			fmt.Println("Unknown command")
-			os.Exit(1)
-		}
+	if len(os.Args) > 1 {
+		dispatchCommand(os.Args[1:])
 	} else {
 		REPLMode()
 	}
@@ -79,21 +49,35 @@ func REPLMode() {
 		if checkQuit(commandText) {
 			break
 		}
-		parseCommand(commandText)
+		args, err := shlex.Split(commandText)
+		if err != nil {
+			fmt.Println("Unexpected Error parsing input :", err)
+			continue
+		}
+		dispatchCommand(args)
 	}
 }
 
-func parseCommand(commandText string) {
-	parts := strings.Fields(commandText)
-	command := parts[0] //PARSE CREATE NOT WORKING CAUSE THIS JUST PARSES EACH WORD. NEED TO HANDLE REPL MODE LINE BY LNE
-	args := parts[1:]
+func dispatchCommand(args []string) {
+	if len(args) == 0 {
+		return
+	}
 
-	switch command {
+	switch args[0] {
 	case "create":
-		runCreate(args[0], args[1])
+		if len(args) < 3 {
+			fmt.Println("Unexpected or missing arguments. Expected: create <question> <answer>")
+			return
+		}
+		question := args[1]
+		answer := args[2]
+		runCreate(question, answer)
 
 	case "editFile":
-		runEditFile(args[0])
+		if len(args) < 2 {
+			fmt.Println("Unexpected of missing arguments. Expected: editFile <fname>")
+		}
+		runEditFile(args[1])
 
 	case "list":
 		listFlashcards()
