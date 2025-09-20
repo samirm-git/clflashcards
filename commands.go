@@ -5,7 +5,36 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
+
+	"github.com/AEROGU/tvchooser"
 )
+
+const storename = "clflashcards_home"
+
+func getFlashcardsDir() string {
+	home, _ := os.UserHomeDir()
+	flashcard_dir := filepath.Join(home, storename)
+
+	if _, err := os.Stat(flashcard_dir); os.IsNotExist(err) {
+		fmt.Println("===============================================================")
+		fmt.Println("Creating flashcard home...")
+		fmt.Println("===============================================================")
+		os.Mkdir(flashcard_dir, 0755)
+	}
+	return flashcard_dir
+}
+
+func selectFlashCard(fpath string) {
+}
+
+func selectFlashCardGUI() {
+	clflashcards_home := getFlashcardsDir()
+	path := tvchooser.FileChooser(nil, false, clflashcards_home)
+	fmt.Println("RUTA: " + path)
+	//ADD FAST ACCESS PATH TO A NEW FOLDER: CLFLASHCARDS
+	//MAKE THIS FOLDER WHENEVER USER DOWNLOADS THIS PACKAGE
+}
 
 func getQ(scanner bufio.Scanner) (string, error) {
 	fmt.Println("Enter a question or 'quit' to quit")

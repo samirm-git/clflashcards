@@ -21,7 +21,6 @@ func main() {
 	// 	os.Exit(1)
 	// }
 	// Define command-line flags
-
 	if len(os.Args) > 1 {
 		dispatchCommand(os.Args[1:])
 	} else {
@@ -81,6 +80,13 @@ func dispatchCommand(args []string) {
 
 	case "list":
 		listFlashcards()
+
+	case "select":
+		if len(args) == 2 {
+			selectFlashCard(args[1])
+		} else {
+			selectFlashCardGUI()
+		}
 
 	default:
 		fmt.Println("Unknown command")
