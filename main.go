@@ -83,6 +83,7 @@ func dispatchCommand(args []string) {
 
 	case "select":
 		if len(args) == 2 {
+			fmt.Println("path inputted: ", args[1])
 			selectFlashCard(args[1])
 		} else {
 			selectFlashCardGUI()

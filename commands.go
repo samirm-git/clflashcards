@@ -2,38 +2,62 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/AEROGU/tvchooser"
 )
 
 const storename = "clflashcards_home"
 
+var flashcard_path string
+
 func getFlashcardsDir() string {
 	home, _ := os.UserHomeDir()
 	flashcard_dir := filepath.Join(home, storename)
 
-	if _, err := os.Stat(flashcard_dir); os.IsNotExist(err) {
+	if _, err := os.Stat(flashcard_dir); errors.Is(err, os.ErrNotExist) {
 		fmt.Println("===============================================================")
 		fmt.Println("Creating flashcard home...")
 		fmt.Println("===============================================================")
-		os.Mkdir(flashcard_dir, 0755)
+		os.Mkdir(flashcard_dir, 0700)
 	}
 	return flashcard_dir
 }
 
-func selectFlashCard(fpath string) {
+func getShortenedFlashcardPath(path string) string {
+	cleanPath := filepath.Clean(path)
+	parts := strings.Split(cleanPath, string(filepath.Separator))
+
+	if len(parts) > 0 && parts[0] == storename {
+		shortened_path := filepath.Join(parts[1:]...)
+		return shortened_path
+	} else {
+		return path
+	}
+}
+
+func selectFlashCard(path string) error {
+	shortened_path := getShortenedFlashcardPath(path)
+	abspath := filepath.Join(getFlashcardsDir(), shortened_path)
+
+	if _, err := os.Stat(abspath); err == nil {
+		flashcard_path = abspath
+		fmt.Println(flashcard_path)
+	} else {
+		return fmt.Errorf("error filenotfound %s: %w", abspath, err)
+	}
+
+	return nil
 }
 
 func selectFlashCardGUI() {
 	clflashcards_home := getFlashcardsDir()
-	path := tvchooser.FileChooser(nil, false, clflashcards_home)
-	fmt.Println("RUTA: " + path)
-	//ADD FAST ACCESS PATH TO A NEW FOLDER: CLFLASHCARDS
-	//MAKE THIS FOLDER WHENEVER USER DOWNLOADS THIS PACKAGE
+	flashcard_path = tvchooser.FileChooser(nil, false, clflashcards_home)
 }
 
 func getQ(scanner bufio.Scanner) (string, error) {
