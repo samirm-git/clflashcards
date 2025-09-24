@@ -14,6 +14,8 @@ type Config struct {
 	FlashcardDir string `json:"flashcard_dir"`
 }
 
+var editorOptions = map[string]bool{"vim": true}
+
 func main() {
 	// config, err := loadConfig("config.json")
 	// if err != nil {
@@ -62,6 +64,8 @@ func dispatchCommand(args []string) {
 		return
 	}
 
+	var err error
+	err = nil
 	switch args[0] {
 	case "create":
 		if len(args) < 3 {
@@ -70,27 +74,40 @@ func dispatchCommand(args []string) {
 		}
 		question := args[1]
 		answer := args[2]
-		runCreate(question, answer)
+		err = runCreate(question, answer)
 
 	case "editFile":
 		if len(args) < 2 {
 			fmt.Println("Unexpected of missing arguments. Expected: editFile <fname>")
+
+		} else if len(args) == 3 {
+			editorName := args[2]
+			_, validEditor := editorOptions[editorName]
+			if !validEditor {
+				fmt.Printf("Invalid text editor option %s \n", editorName)
+			}
+			err = runEditFile(args[1], editorName)
+		} else {
+			err = runEditFile(args[1], "vim")
 		}
-		runEditFile(args[1])
 
 	case "list":
-		listFlashcards()
+		err = showFlashcards()
 
 	case "select":
 		if len(args) == 2 {
 			fmt.Println("path inputted: ", args[1])
-			selectFlashCard(args[1])
+			err = selectFlashCard(args[1])
 		} else {
-			selectFlashCardGUI()
+			err = selectFlashCardGUI()
 		}
 
 	default:
 		fmt.Println("Unknown command")
+	}
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 	}
 }
 

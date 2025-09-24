@@ -12,3 +12,6 @@ ss | ff
 What did you change? | I removed flags :)
 Did you update the REPL mode as well | Yes, I did.
 Are you addding another flashcard? | yes
+sdsdsd | 24
+dfjhdfkjfh | 9
+crkjfrkfj | djwkjdew
