@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/AEROGU/tvchooser"
+	"github.com/spf13/pflag"
 )
 
 const storename = "clflashcards_home"
@@ -149,15 +150,35 @@ func runCreate(question, answer string) error {
 	return nil
 }
 
-func runEditFile(fname, editor string) error {
-	fname = parsefname(fname)
-	f, err := os.OpenFile(fname, os.O_RDWR|os.O_CREATE, 0644)
+func runEditFile(args []string) error {
+	editfs := pflag.NewFlagSet("editFile", pflag.ContinueOnError)
+	fname := editfs.StringP("filename", "f", "", "Name of file to edit")
+	editor := editfs.StringP("editor", "e", "code", "Text editor to open file with")
+
+	if err := editfs.Parse(args); err != nil {
+		return fmt.Errorf("parsing args: %w", err)
+	}
+
+	if !editfs.Changed("filename") {
+		if flashcard_path == "" {
+			fmt.Println("No file selected. Either use 'select' command or add file name as argument to 'edit'")
+			return nil
+		} else {
+			*fname = flashcard_path
+		}
+	} else {
+		if flashcard_path == "" {
+			*fname = filepath.Join(getFlashcardsDir(), *fname)
+		}
+	}
+
+	f, err := os.OpenFile(*fname, os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
-		return fmt.Errorf("opening file: %s: %w", fname, err)
+		return fmt.Errorf("opening file: %s: %w", *fname, err)
 	}
 	defer f.Close()
 
-	cmd := exec.Command(editor, fname)
+	cmd := exec.Command(*editor, *fname)
 
 	// Connect Vim to your terminal's stdin/stdout/stderr
 	cmd.Stdin = os.Stdin

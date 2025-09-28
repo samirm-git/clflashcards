@@ -76,22 +76,10 @@ func dispatchCommand(args []string) {
 		answer := args[2]
 		err = runCreate(question, answer)
 
-	case "editFile":
-		if len(args) < 2 {
-			fmt.Println("Unexpected of missing arguments. Expected: editFile <fname>")
+	case "edit":
+		err = runEditFile(args[1:])
 
-		} else if len(args) == 3 {
-			editorName := args[2]
-			_, validEditor := editorOptions[editorName]
-			if !validEditor {
-				fmt.Printf("Invalid text editor option %s \n", editorName)
-			}
-			err = runEditFile(args[1], editorName)
-		} else {
-			err = runEditFile(args[1], "vim")
-		}
-
-	case "list":
+	case "show":
 		err = showFlashcards()
 
 	case "select":
