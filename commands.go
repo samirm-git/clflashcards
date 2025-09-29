@@ -66,10 +66,11 @@ func selectFlashCardGUI() error {
 
 func saveFlashcard(question, answer string) error {
 	// Open the file in append mode, creating it if it doesn't exist
-	fname := "testfile.txt"
-	f, err := os.OpenFile("testfile.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		return fmt.Errorf("opening file %s : %w", fname, err)
+	f, err := os.OpenFile(currFlashCardPath, os.O_APPEND|os.O_WRONLY, 0644)
+	if os.IsNotExist(err) {
+		return fmt.Errorf("saving file %s  but file does not exist: %w", currFlashCardPath, err)
+	} else if err != nil {
+		return fmt.Errorf("opening file %s : %w", currFlashCardPath, err)
 	}
 	defer f.Close()
 
@@ -77,9 +78,9 @@ func saveFlashcard(question, answer string) error {
 	entry := fmt.Sprintf("%s | %s\n", question, answer)
 	_, err = f.WriteString(entry)
 	if err != nil {
-		return fmt.Errorf("saving %s : %w", fname, err)
+		return fmt.Errorf("saving %s : %w", currFlashCardPath, err)
 	} else {
-		fmt.Println("Flashcard saved successfully to", "testfile.txt")
+		fmt.Println("Flashcard saved successfully")
 	}
 	return nil
 }

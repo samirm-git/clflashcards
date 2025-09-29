@@ -33,7 +33,7 @@ func printPrompt() {
 		fmt.Print("clflashcards> ")
 	} else {
 		colour := color.New(color.FgCyan).SprintFunc()
-		fmt.Printf("clflashcards %s>", colour(filepath.Base(currFlashCardPath)))
+		fmt.Printf("clflashcards %s> ", colour(filepath.Base(currFlashCardPath)))
 	}
 }
 
