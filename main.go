@@ -68,13 +68,7 @@ func dispatchCommand(args []string) {
 	err = nil
 	switch args[0] {
 	case "create":
-		if len(args) < 3 {
-			fmt.Println("Unexpected or missing arguments. Expected: create <question> <answer>")
-			return
-		}
-		question := args[1]
-		answer := args[2]
-		err = runCreate(question, answer)
+		err = runCreate(args[1:])
 
 	case "edit":
 		err = runEditFile(args[1:])

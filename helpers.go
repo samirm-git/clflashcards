@@ -37,27 +37,14 @@ func printPrompt() {
 	}
 }
 
-func getQ(scanner bufio.Scanner) (string, error) {
-	fmt.Println("Enter a question or 'quit' to quit")
+func getUserInput(scanner bufio.Scanner) (string, error) {
 	printPrompt()
 	scanner.Scan()
 	if err := scanner.Err(); err != nil {
-		return "", fmt.Errorf("awaiting question:  %w", err)
+		return "", fmt.Errorf("awaiting input:  %w", err)
 	} else {
-		newquestion := scanner.Text()
-		return newquestion, nil
-	}
-}
-
-func getA(scanner bufio.Scanner) (string, error) {
-	fmt.Println("Enter the answer or 'quit' to quit")
-	printPrompt()
-	scanner.Scan()
-	if err := scanner.Err(); err != nil {
-		return "", fmt.Errorf("awaiting answer: %w", err)
-	} else {
-		newasnwer := scanner.Text()
-		return newasnwer, nil
+		input := scanner.Text()
+		return input, nil
 	}
 }
 

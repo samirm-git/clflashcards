@@ -95,12 +95,12 @@ func showFlashcards() error {
 	return nil
 }
 
-func runCreate(question, answer string) error {
-	var err error
-	if question == "" || answer == "" {
+func runCreate(qaArgs []string) error {
+	if len(qaArgs) < 2 {
 		scanner := bufio.NewScanner(os.Stdin)
 		for {
-			question, err = getQ(*scanner)
+			fmt.Println("Enter a question or 'quit' to quit")
+			question, err := getUserInput(*scanner)
 
 			if err != nil {
 				return fmt.Errorf("parsing question %s: %w", question, err)
@@ -108,7 +108,8 @@ func runCreate(question, answer string) error {
 				break
 			}
 
-			answer, err = getA(*scanner)
+			fmt.Println("Enter an answer or 'quit' to quit")
+			answer, err := getUserInput(*scanner)
 			if err != nil {
 				return fmt.Errorf("parsing answer %s: %w", answer, err)
 			} else if checkQuit(answer) {
@@ -121,7 +122,9 @@ func runCreate(question, answer string) error {
 			}
 		}
 	} else {
-		err = saveFlashcard(question, answer)
+		question := qaArgs[0]
+		answer := qaArgs[1]
+		err := saveFlashcard(question, answer)
 		if err != nil {
 			return fmt.Errorf("saving question  %s  and answer  %q  : %w", question, answer, err)
 		}
@@ -141,7 +144,7 @@ func runEditFile(args []string) error {
 
 	if !editfs.Changed("filename") {
 		if currFlashCardPath == "" {
-			fmt.Println("No file selected. Either use 'select' command or add file name as argument to 'edit'")
+			fmt.Println("NO FILE SELECTED. Either use '-f' flag and specify file or use 'select' to change current flashcard.")
 			return nil
 		} else {
 			*fname = currFlashCardPath
