@@ -15,7 +15,7 @@ import (
 
 const storename = "clflashcards_home"
 
-var flashcard_path string
+var currFlashCardPath string
 
 func getFlashcardsDir() string {
 	home, _ := os.UserHomeDir()
@@ -30,7 +30,7 @@ func getFlashcardsDir() string {
 	return flashcard_dir
 }
 
-func getShortenedFlashcardPath(path string) string {
+func removeStoreFromPath(path string) string {
 	cleanPath := filepath.Clean(path)
 	parts := strings.Split(cleanPath, string(filepath.Separator))
 
@@ -43,47 +43,25 @@ func getShortenedFlashcardPath(path string) string {
 }
 
 func selectFlashCard(path string) error {
-	shortened_path := getShortenedFlashcardPath(path)
+	shortened_path := addTxtExtension(removeStoreFromPath(path))
 	abspath := filepath.Join(getFlashcardsDir(), shortened_path)
 
 	if _, err := os.Stat(abspath); err == nil {
-		flashcard_path = abspath
-		fmt.Println(flashcard_path)
+		currFlashCardPath = abspath
+		fmt.Println(currFlashCardPath)
 	} else {
 		return fmt.Errorf("filenotfound %s: %w", abspath, err)
 	}
 
+	fmt.Println("Successfully selected file.")
 	return nil
 }
 
 func selectFlashCardGUI() error {
 	clflashcards_home := getFlashcardsDir()
-	flashcard_path = tvchooser.FileChooser(nil, false, clflashcards_home)
+	currFlashCardPath = tvchooser.FileChooser(nil, false, clflashcards_home)
+	fmt.Println("Successfully selected file.")
 	return nil
-}
-
-func getQ(scanner bufio.Scanner) (string, error) {
-	fmt.Println("Enter a question or 'quit' to quit")
-	printPrompt()
-	scanner.Scan()
-	if err := scanner.Err(); err != nil {
-		return "", fmt.Errorf("awaiting input:  %w", err)
-	} else {
-		newquestion := scanner.Text()
-		return newquestion, nil
-	}
-}
-
-func getA(scanner bufio.Scanner) (string, error) {
-	fmt.Println("Enter the answer or 'quit' to quit")
-	printPrompt()
-	scanner.Scan()
-	if err := scanner.Err(); err != nil {
-		return "", fmt.Errorf("awaiting input: %w", err)
-	} else {
-		newasnwer := scanner.Text()
-		return newasnwer, nil
-	}
 }
 
 func saveFlashcard(question, answer string) error {
@@ -154,43 +132,62 @@ func runEditFile(args []string) error {
 	editfs := pflag.NewFlagSet("editFile", pflag.ContinueOnError)
 	fname := editfs.StringP("filename", "f", "", "Name of file to edit")
 	editor := editfs.StringP("editor", "e", "code", "Text editor to open file with")
+	isNewFile := editfs.BoolP("newFile", "n", false, "Flag to create new file in same dir as currently selected file, if fname does not exist")
 
 	if err := editfs.Parse(args); err != nil {
 		return fmt.Errorf("parsing args: %w", err)
 	}
 
 	if !editfs.Changed("filename") {
-		if flashcard_path == "" {
+		if currFlashCardPath == "" {
 			fmt.Println("No file selected. Either use 'select' command or add file name as argument to 'edit'")
 			return nil
 		} else {
-			*fname = flashcard_path
+			*fname = currFlashCardPath
 		}
-	} else {
-		if flashcard_path == "" {
+	} else { //fname is specified
+		*fname = addTxtExtension(*fname)
+		if currFlashCardPath == "" { //not selected any flashcard
 			*fname = filepath.Join(getFlashcardsDir(), *fname)
+		} else {
+			*fname = filepath.Join(filepath.Dir(currFlashCardPath), *fname)
 		}
 	}
 
-	f, err := os.OpenFile(*fname, os.O_RDWR|os.O_CREATE, 0644)
-	if err != nil {
-		return fmt.Errorf("opening file: %s: %w", *fname, err)
+	if *isNewFile {
+		f, err := os.OpenFile(*fname, os.O_RDWR|os.O_CREATE, 0644)
+		if err != nil {
+			return fmt.Errorf("opening file: %s: %w", *fname, err)
+		}
+		defer f.Close()
+	} else {
+		f, err := os.OpenFile(*fname, os.O_RDWR, 0644)
+		if os.IsNotExist(err) {
+			fmt.Printf("Error: File %s does not exist. If you want to create a new file with the edit command use -n flag\n", *fname)
+			return nil
+		} else if err != nil {
+			return fmt.Errorf("opening file: %s: %w", *fname, err)
+		}
+		defer f.Close()
 	}
-	defer f.Close()
 
 	cmd := exec.Command(*editor, *fname)
 
-	// Connect Vim to your terminal's stdin/stdout/stderr
+	// Connect editor to terminal's stdin/stdout/stderr
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
-	// Run Vim and wait until user exits
-	err = cmd.Run()
+	// Run editor and wait until user exits
+	err := cmd.Run()
 	if err != nil {
-		return fmt.Errorf("error running editor: %s: %w", editor, err)
+		return fmt.Errorf("running editor: %s: %w", *editor, err)
 	}
 	fmt.Println("Editing finished!")
 
+	currFlashCardPath = *fname
+
 	return nil
+
+	//Show what flashcard is currently selected in the printprompt()
 }

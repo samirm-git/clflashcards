@@ -1,15 +1,19 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"path/filepath"
 	"strings"
+
+	"github.com/fatih/color"
 )
 
-func parsefname(fname string) string {
-	if strings.HasSuffix(fname, ".txt") {
-		return fname
+func addTxtExtension(fname string) string {
+	if !strings.HasSuffix(fname, ".txt") {
+		return fname + ".txt"
 	}
-	return fname + ".txt"
+	return fname
 }
 
 func introPrint() {
@@ -25,7 +29,36 @@ func introPrint() {
 }
 
 func printPrompt() {
-	fmt.Print("clflashcards> ")
+	if currFlashCardPath == "" {
+		fmt.Print("clflashcards> ")
+	} else {
+		colour := color.New(color.FgCyan).SprintFunc()
+		fmt.Printf("clflashcards %s>", colour(filepath.Base(currFlashCardPath)))
+	}
+}
+
+func getQ(scanner bufio.Scanner) (string, error) {
+	fmt.Println("Enter a question or 'quit' to quit")
+	printPrompt()
+	scanner.Scan()
+	if err := scanner.Err(); err != nil {
+		return "", fmt.Errorf("awaiting question:  %w", err)
+	} else {
+		newquestion := scanner.Text()
+		return newquestion, nil
+	}
+}
+
+func getA(scanner bufio.Scanner) (string, error) {
+	fmt.Println("Enter the answer or 'quit' to quit")
+	printPrompt()
+	scanner.Scan()
+	if err := scanner.Err(); err != nil {
+		return "", fmt.Errorf("awaiting answer: %w", err)
+	} else {
+		newasnwer := scanner.Text()
+		return newasnwer, nil
+	}
 }
 
 func checkQuit(text string) bool {
