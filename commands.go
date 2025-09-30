@@ -86,10 +86,13 @@ func saveFlashcard(question, answer string) error {
 }
 
 func showFlashcards() error {
-	f := "flashcards.txt"
-	content, err := os.ReadFile(f)
+	if currFlashCardPath == "" {
+		fmt.Println("NO FILE SELECTED. Use 'select' or 'edit' to change current flashcard.")
+		return nil
+	}
+	content, err := os.ReadFile(currFlashCardPath)
 	if err != nil {
-		return fmt.Errorf("error reading file %s: %w", f, err)
+		return fmt.Errorf("error reading file %s: %w", filepath.Base(currFlashCardPath), err)
 	}
 	fmt.Println("Flashcards:\n", string(content))
 	return nil
@@ -193,5 +196,4 @@ func runEditFile(args []string) error {
 
 	return nil
 
-	//Show what flashcard is currently selected in the printprompt()
 }
