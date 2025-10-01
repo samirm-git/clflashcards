@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -53,4 +54,15 @@ func checkQuit(text string) bool {
 		return true
 	}
 	return false
+}
+
+func fileExists(path string) (bool, error) {
+	info, err := os.Stat(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false, nil
+		}
+		return false, fmt.Errorf("checking if file exists: %w", err) // Return the actual error
+	}
+	return !info.IsDir(), nil
 }

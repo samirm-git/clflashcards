@@ -48,6 +48,7 @@ func selectFlashCard(path string) error {
 
 	if _, err := os.Stat(abspath); err == nil {
 		currFlashCardPath = abspath
+		idx.SetCurrentFile(abspath)
 	} else {
 		return fmt.Errorf("filenotfound %s: %w", abspath, err)
 	}
@@ -59,6 +60,7 @@ func selectFlashCard(path string) error {
 func selectFlashCardGUI() error {
 	clflashcards_home := getFlashcardsDir()
 	currFlashCardPath = tvchooser.FileChooser(nil, false, clflashcards_home)
+	idx.SetCurrentFile(currFlashCardPath)
 	fmt.Println("Successfully selected file.")
 	return nil
 }
@@ -162,10 +164,13 @@ func runEditFile(args []string) error {
 
 	} else { //fname is specified
 		*fname = addTxtExtension(*fname)
-		if currFlashCardPath == "" { //not selected any flashcard
-			*fname = filepath.Join(getFlashcardsDir(), *fname)
-		} else {
-			*fname = filepath.Join(filepath.Dir(currFlashCardPath), *fname)
+		fullcardpath, err := idx.SmartCardFinder(*fname)
+		fmt.Println("===========================")
+		fmt.Println(fullcardpath)
+		fmt.Println("===========================")
+		idx.SetCurrentFile(fullcardpath)
+		if err != nil {
+			return err
 		}
 	}
 
