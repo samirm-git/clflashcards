@@ -39,9 +39,8 @@ func (idx *FlashcardIndex) SmartCardFinder(inputPath string) (string, error) {
 
 			for !samePath(cardFinder, masterStore) && parent != cardFinder {
 				candidatePath := filepath.Clean(filepath.Join(cardFinder, inputPath))
-				candidateDirPath := filepath.Dir(candidatePath)
 
-				if checkCardInIndex(idx, candidateDirPath) {
+				if isCardInIndex(idx, candidatePath) {
 					return candidatePath, nil
 				}
 				parent = filepath.Dir(cardFinder)
@@ -52,33 +51,34 @@ func (idx *FlashcardIndex) SmartCardFinder(inputPath string) (string, error) {
 			}
 
 			candidatePath := filepath.Clean(filepath.Join(masterStore, inputPath))
-			candidateDirPath := filepath.Dir(candidatePath)
-			if checkCardInIndex(idx, candidateDirPath) {
+			if isCardInIndex(idx, candidatePath) {
 				return candidatePath, nil
 			}
 			return "", fmt.Errorf("file not found: %s (tried active path ancestors and masterStore)", inputPath)
 		}
 
 	} else {
-		fmt.Println("Got to else statement")
-		fmt.Println(activeDir)
 		// 3) No path separator -> prefer active directory first
-		inputFile := inputPath
-		fmt.Println(inputFile)
-		fmt.Println("")
-		if checkCardInIndex(idx, activeDir) {
-			return filepath.Join(activeDir, inputFile), nil
+		candidatePath := filepath.Clean(filepath.Join(activeDir, inputPath))
+		if isCardInIndex(idx, candidatePath) {
+			return candidatePath, nil
 		}
 	}
 
 	return "", fmt.Errorf("could not find input in flashcard store : %s", inputPath)
 }
 
-func checkCardInIndex(idx *FlashcardIndex, cardDirPath string) bool {
+func isCardInIndex(idx *FlashcardIndex, flashcard string) bool {
 	//ONLY CHECKING IF THE DIR PATH GIVEN IN INPUT (SMART ADJUSTED) EXSITS IN INDEX
 	//NOT CHECKING IF THE LAST PART I.E. FILE NAME MATCHES WITH A VALUE IN THE INDEX[DIR_PATH]
+	cardDirPath := filepath.Dir(flashcard)
 	if _, ok := idx.FilesByDir[cardDirPath]; ok {
-		return true
+		flashcard_name := filepath.Base(flashcard)
+		if contains(idx.FilesByDir[cardDirPath], flashcard_name) {
+			return true
+		} else {
+			return false
+		}
 	} else {
 		return false
 	}
