@@ -165,13 +165,11 @@ func runEditFile(args []string) error {
 	} else { //fname is specified
 		*fname = addTxtExtension(*fname)
 		fullcardpath, err := idx.SmartCardFinder(*fname)
-		fmt.Println("===========================")
-		fmt.Println(fullcardpath)
-		fmt.Println("===========================")
 		idx.SetCurrentFile(fullcardpath)
 		if err != nil {
 			return err
 		}
+		*fname = fullcardpath
 	}
 
 	if *isNewFile {
