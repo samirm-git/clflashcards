@@ -48,7 +48,6 @@ func selectFlashCard(path string) error {
 
 	if _, err := os.Stat(abspath); err == nil {
 		currFlashCardPath = abspath
-		fmt.Println(currFlashCardPath)
 	} else {
 		return fmt.Errorf("filenotfound %s: %w", abspath, err)
 	}
@@ -146,12 +145,21 @@ func runEditFile(args []string) error {
 	}
 
 	if !editfs.Changed("filename") {
-		if currFlashCardPath == "" {
-			fmt.Println("NO FILE SELECTED. Either use '-f' flag and specify file or use 'select' to change current flashcard.")
-			return nil
+		positionalArgs := editfs.Args()
+		if len(positionalArgs) > 0 {
+			*fname = positionalArgs[0]
 		} else {
 			*fname = currFlashCardPath
 		}
+
+		if *fname == "" {
+			fmt.Println(`NO FILE SELECTED. Either use:
+									1)  '-f' flag and specify file 
+									or 2)	specify file without '-f' as first arg after 'edit' 
+									or 3) use 'select' to change current flashcard.`)
+			return nil
+		}
+
 	} else { //fname is specified
 		*fname = addTxtExtension(*fname)
 		if currFlashCardPath == "" { //not selected any flashcard
