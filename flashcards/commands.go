@@ -1,53 +1,21 @@
-package main
+package flashcards
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 
 	"github.com/AEROGU/tvchooser"
 	"github.com/spf13/pflag"
 )
 
-const storename = "clflashcards_home"
-
-var currFlashCardPath string
-
-func getFlashcardsDir() string {
-	home, _ := os.UserHomeDir()
-	flashcard_dir := filepath.Join(home, storename)
-
-	if _, err := os.Stat(flashcard_dir); errors.Is(err, os.ErrNotExist) {
-		fmt.Println("===============================================================")
-		fmt.Println("Creating flashcard home...")
-		fmt.Println("===============================================================")
-		os.Mkdir(flashcard_dir, 0700)
-	}
-	return flashcard_dir
-}
-
-func removeStoreFromPath(path string) string {
-	cleanPath := filepath.Clean(path)
-	parts := strings.Split(cleanPath, string(filepath.Separator))
-
-	if len(parts) > 0 && parts[0] == storename {
-		shortened_path := filepath.Join(parts[1:]...)
-		return shortened_path
-	} else {
-		return path
-	}
-}
-
-func selectFlashCard(path string) error {
+func runSelectFlashCard(idx *FlashcardIndex, path string) error {
 	shortened_path := addTxtExtension(removeStoreFromPath(path))
-	abspath := filepath.Join(getFlashcardsDir(), shortened_path)
+	abspath := filepath.Join(getStorePath(), shortened_path)
 
 	if _, err := os.Stat(abspath); err == nil {
-		currFlashCardPath = abspath
 		idx.SetCurrentFile(abspath)
 	} else {
 		return fmt.Errorf("filenotfound %s: %w", abspath, err)
@@ -57,21 +25,20 @@ func selectFlashCard(path string) error {
 	return nil
 }
 
-func selectFlashCardGUI() error {
-	clflashcards_home := getFlashcardsDir()
-	currFlashCardPath = tvchooser.FileChooser(nil, false, clflashcards_home)
-	idx.SetCurrentFile(currFlashCardPath)
+func runSelectFlashCardGUI(idx *FlashcardIndex) error {
+	clflashcards_home := getStorePath()
+	idx.SetCurrentFile(tvchooser.FileChooser(nil, false, clflashcards_home))
 	fmt.Println("Successfully selected file.")
 	return nil
 }
 
-func saveFlashcard(question, answer string) error {
+func saveFlashcard(idx *FlashcardIndex, question, answer string) error {
 	// Open the file in append mode, creating it if it doesn't exist
-	f, err := os.OpenFile(currFlashCardPath, os.O_APPEND|os.O_WRONLY, 0644)
+	f, err := os.OpenFile(idx.currentCard, os.O_APPEND|os.O_WRONLY, 0644)
 	if os.IsNotExist(err) {
-		return fmt.Errorf("saving file %s  but file does not exist: %w", currFlashCardPath, err)
+		return fmt.Errorf("saving file %s  but file does not exist: %w", idx.currentCard, err)
 	} else if err != nil {
-		return fmt.Errorf("opening file %s : %w", currFlashCardPath, err)
+		return fmt.Errorf("opening file %s : %w", idx.currentCard, err)
 	}
 	defer f.Close()
 
@@ -79,32 +46,32 @@ func saveFlashcard(question, answer string) error {
 	entry := fmt.Sprintf("%s | %s\n", question, answer)
 	_, err = f.WriteString(entry)
 	if err != nil {
-		return fmt.Errorf("saving %s : %w", currFlashCardPath, err)
+		return fmt.Errorf("saving %s : %w", idx.currentCard, err)
 	} else {
 		fmt.Println("Flashcard saved successfully")
 	}
 	return nil
 }
 
-func showFlashcards() error {
-	if currFlashCardPath == "" {
+func runShow(idx *FlashcardIndex, args []string) error {
+	if idx.currentCard == "" {
 		fmt.Println("NO FILE SELECTED. Use 'select' or 'edit' to change current flashcard.")
 		return nil
 	}
-	content, err := os.ReadFile(currFlashCardPath)
+	content, err := os.ReadFile(idx.currentCard)
 	if err != nil {
-		return fmt.Errorf("error reading file %s: %w", filepath.Base(currFlashCardPath), err)
+		return fmt.Errorf("error reading file %s: %w", filepath.Base(idx.currentCard), err)
 	}
 	fmt.Println("Flashcards:\n", string(content))
 	return nil
 }
 
-func runCreate(qaArgs []string) error {
+func runCreate(idx *FlashcardIndex, qaArgs []string) error {
 	if len(qaArgs) < 2 {
 		scanner := bufio.NewScanner(os.Stdin)
 		for {
 			fmt.Println("Enter a question or 'quit' to quit")
-			question, err := getUserInput(*scanner)
+			question, err := getUserInput(idx.currentCard, *scanner)
 
 			if err != nil {
 				return fmt.Errorf("parsing question %s: %w", question, err)
@@ -113,14 +80,14 @@ func runCreate(qaArgs []string) error {
 			}
 
 			fmt.Println("Enter an answer or 'quit' to quit")
-			answer, err := getUserInput(*scanner)
+			answer, err := getUserInput(idx.currentCard, *scanner)
 			if err != nil {
 				return fmt.Errorf("parsing answer %s: %w", answer, err)
 			} else if checkQuit(answer) {
 				break
 			}
 
-			err = saveFlashcard(question, answer)
+			err = saveFlashcard(idx, question, answer)
 			if err != nil {
 				return fmt.Errorf("saving question  %s  and answer  %q  : %w", question, answer, err)
 			}
@@ -128,7 +95,7 @@ func runCreate(qaArgs []string) error {
 	} else {
 		question := qaArgs[0]
 		answer := qaArgs[1]
-		err := saveFlashcard(question, answer)
+		err := saveFlashcard(idx, question, answer)
 		if err != nil {
 			return fmt.Errorf("saving question  %s  and answer  %q  : %w", question, answer, err)
 		}
@@ -136,7 +103,7 @@ func runCreate(qaArgs []string) error {
 	return nil
 }
 
-func runEditFile(args []string) error {
+func runEditFile(idx *FlashcardIndex, args []string) error {
 	editfs := pflag.NewFlagSet("editFile", pflag.ContinueOnError)
 	fname := editfs.StringP("filename", "f", "", "Name of file to edit")
 	editor := editfs.StringP("editor", "e", "code", "Text editor to open file with")
@@ -151,7 +118,7 @@ func runEditFile(args []string) error {
 		if len(positionalArgs) > 0 {
 			*fname = positionalArgs[0]
 		} else {
-			*fname = currFlashCardPath
+			*fname = idx.currentCard
 		}
 
 		if *fname == "" {
@@ -203,7 +170,7 @@ func runEditFile(args []string) error {
 	}
 	fmt.Println("Editing finished!")
 
-	currFlashCardPath = *fname
+	idx.currentCard = *fname
 
 	return nil
 

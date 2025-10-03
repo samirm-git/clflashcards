@@ -1,4 +1,4 @@
-package main
+package flashcards
 
 import (
 	"fmt"
@@ -32,14 +32,14 @@ func (idx *FlashcardIndex) walkFunc(path string, entry os.DirEntry, walkErr erro
 	return nil
 }
 
-func BuildFlashcardIndex(masterDir string) (*FlashcardIndex, error) {
+func BuildFlashcardIndex() (*FlashcardIndex, error) {
 	idx := &FlashcardIndex{
-		MasterStore: masterDir,
+		MasterStore: getStorePath(),
 		currentCard: "",
 		FilesByDir:  make(map[string][]string),
 	}
 
-	err := filepath.WalkDir(masterDir, idx.walkFunc)
+	err := filepath.WalkDir(idx.MasterStore, idx.walkFunc)
 	if err != nil {
 		return nil, err
 	}
