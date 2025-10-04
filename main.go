@@ -1,107 +1,27 @@
 package main
 
 import (
-	"bufio"
+
 	// "flag"
 	"fmt"
 	"os"
-	"strings"
 
-	"github.com/google/shlex"
+	"github.com/samirm-git/clflashcards/flashcards"
 )
 
-type Config struct {
-	FlashcardDir string `json:"flashcard_dir"`
-}
-
-var editorOptions = map[string]bool{"vim": true}
-
 func main() {
-	// config, err := loadConfig("config.json")
-	// if err != nil {
-	// 	fmt.Println("Error loading config:", err)
-	// 	os.Exit(1)
-	// }
-	// Define command-line flags
-	if len(os.Args) > 1 {
-		dispatchCommand(os.Args[1:])
-	} else {
-		REPLMode()
+
+	idx, err := flashcards.BuildFlashcardIndex()
+	for dir, files := range idx.FilesByDir {
+		fmt.Printf("Directory: %s\n", dir)
+		fmt.Printf("  Files: %v\n", files)
+		fmt.Println()
 	}
-}
-
-func REPLMode() {
-
-	introPrint()
-	for {
-		printPrompt()
-		scanner := bufio.NewScanner(os.Stdin)
-		scanner.Scan()
-		if err := scanner.Err(); err != nil {
-			fmt.Println("Error getting command: ", err)
-			break
-		}
-
-		commandText := strings.TrimSpace(scanner.Text())
-
-		if commandText == "" {
-			continue
-		}
-		if checkQuit(commandText) {
-			break
-		}
-		args, err := shlex.Split(commandText)
-		if err != nil {
-			fmt.Println("Unexpected Error parsing input :", err)
-			continue
-		}
-		dispatchCommand(args)
-	}
-}
-
-func dispatchCommand(args []string) {
-	if len(args) == 0 {
-		return
-	}
-
-	var err error
-	err = nil
-	switch args[0] {
-	case "create":
-		err = runCreate(args[1:])
-
-	case "edit":
-		err = runEditFile(args[1:])
-
-	case "show":
-		err = showFlashcards()
-
-	case "select":
-		if len(args) == 2 {
-			err = selectFlashCard(args[1])
-		} else {
-			err = selectFlashCardGUI()
-		}
-
-	default:
-		fmt.Println("Unknown command")
-	}
-
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
 	}
+
+	flashcards.RunREPL(idx)
+
 }
-
-// Load config from JSON file
-// func loadConfig(path string) (*Config, error) {
-// 	file, err := os.ReadFile(path)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	var config Config
-// 	if err := json.Unmarshal(file, &config); err != nil {
-// 		return nil, err
-// 	}
-// 	return &config, nil
-// }
