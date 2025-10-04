@@ -10,7 +10,6 @@ import (
 func (idx *FlashcardIndex) SmartCardFinder(inputPath string) (string, error) {
 	var err error
 	masterStore, err := filepath.Abs(idx.MasterStore)
-	fmt.Println("masterStore", masterStore)
 	if err != nil {
 		return "", err
 	}

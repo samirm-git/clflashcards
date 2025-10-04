@@ -12,9 +12,11 @@ import (
 type CommandFunc func(idx *FlashcardIndex, args []string) error
 
 var commands = map[string]CommandFunc{
-	"create": func(idx *FlashcardIndex, args []string) error { return runCreate(idx, args) },
-	"edit":   func(idx *FlashcardIndex, args []string) error { return runEditFile(idx, args) },
-	"show":   func(idx *FlashcardIndex, args []string) error { return runShow(idx, args) },
+	"create":    func(idx *FlashcardIndex, args []string) error { return runCreate(idx, args) },
+	"show":      func(idx *FlashcardIndex, args []string) error { return runShow(idx, args) },
+	"edit":      func(idx *FlashcardIndex, args []string) error { return runEditFile(idx, args) },
+	"editgui":   func(idx *FlashcardIndex, args []string) error { return runEditFileGUI(idx, args) },
+	"selectgui": func(idx *FlashcardIndex, args []string) error { return runSelectFlashCardGUI(idx) },
 	"select": func(idx *FlashcardIndex, args []string) error {
 		if len(args) == 0 {
 			return runSelectFlashCardGUI(idx)

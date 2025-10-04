@@ -113,75 +113,114 @@ func runCreate(idx *FlashcardIndex, qaArgs []string) error {
 	return nil
 }
 
+func runEditFileGUI(idx *FlashcardIndex, args []string) error {
+	editguifs := pflag.NewFlagSet("editFileGUI", pflag.ContinueOnError)
+	editor := editguifs.StringP("editor", "e", "code", "Text editor to open file with")
+	isNewFile := editguifs.BoolP("newFile", "n", false, "Flag to create new file in same dir as currently selected file if fname does not exist.")
+
+	if err := editguifs.Parse(args); err != nil {
+		return fmt.Errorf("parsing args: %w", err)
+	}
+	clflashcards_home := getStorePath()
+	path := tvchooser.FileChooser(nil, false, clflashcards_home)
+	if path == "" {
+		return nil
+	}
+	err := openFileInEditor(path, *editor, *isNewFile)
+	if err != nil {
+		return err
+	}
+
+	idx.currentCard = path
+	return nil
+
+}
+
 func runEditFile(idx *FlashcardIndex, args []string) error {
 	editfs := pflag.NewFlagSet("editFile", pflag.ContinueOnError)
 	fname := editfs.StringP("filename", "f", "", "Name of file to edit")
 	editor := editfs.StringP("editor", "e", "code", "Text editor to open file with")
-	isNewFile := editfs.BoolP("newFile", "n", false, "Flag to create new file in same dir as currently selected file, if fname does not exist")
+	isNewFile := editfs.BoolP("newFile", "n", false, "Flag to create new file in same dir as currently selected file if fname does not exist.")
 
 	if err := editfs.Parse(args); err != nil {
 		return fmt.Errorf("parsing args: %w", err)
 	}
 
-	if !editfs.Changed("filename") { //filename flag argument is not provided
+	// Step 1: Resolve the filename (full path)
+	filePath, err := resolveFileName(idx, editfs, *fname)
+	if err != nil {
+		return err
+	}
+	if filePath == "" {
+		fmt.Println(`NO FILE SELECTED. Either use:
+    1)  '-f' flag and specify file 
+    or 2) specify file without '-f' as first positional arg after 'edit' 
+    or 3) use 'select' to change current flashcard.`)
+		return nil
+	}
+
+	// Step 2: Open and edit the file
+	if err := openFileInEditor(filePath, *editor, *isNewFile); err != nil {
+		return err
+	}
+
+	// Update current flashcard after editing
+	idx.currentCard = filePath
+	return nil
+}
+
+// resolveFileName determines the correct filename to edit
+func resolveFileName(idx *FlashcardIndex, editfs *pflag.FlagSet, fname string) (string, error) {
+	if !editfs.Changed("filename") {
+		// No -f flag: check positional args or fallback to current card
 		positionalArgs := editfs.Args()
 		if len(positionalArgs) > 0 {
-			*fname = positionalArgs[0] //check positional argument for filename
+			fname = positionalArgs[0]
 		} else {
-			*fname = idx.currentCard
+			fname = idx.currentCard
 		}
-
-		if *fname == "" {
-			fmt.Println(`NO FILE SELECTED. Either use:
-									1)  '-f' flag and specify file 
-									or 2)	specify file without '-f' as first positional arg after 'edit' 
-									or 3) use 'select' to change current flashcard.`)
-			return nil
+		if fname == "" {
+			return "", nil
 		}
-
-	} else { //fname is specified
-		*fname = addTxtExtension(*fname)
-		fullcardpath, err := idx.SmartCardFinder(*fname)
-		if err != nil {
-			return err
-		}
-		idx.SetCurrentFile(fullcardpath)
-		*fname = fullcardpath
+		return fname, nil
 	}
 
-	if *isNewFile {
-		f, err := os.OpenFile(*fname, os.O_RDWR|os.O_CREATE, 0644)
-		if err != nil {
-			return fmt.Errorf("opening file: %s: %w", *fname, err)
-		}
-		defer f.Close()
-	} else {
-		f, err := os.OpenFile(*fname, os.O_RDWR, 0644)
-		if os.IsNotExist(err) {
-			fmt.Printf("Error: File %s does not exist. If you want to create a new file with the edit command use -n flag\n", *fname)
-			return nil
-		} else if err != nil {
-			return fmt.Errorf("opening file: %s: %w", *fname, err)
-		}
-		defer f.Close()
+	// Filename provided with -f flag
+	fname = addTxtExtension(fname)
+	fullpath, err := idx.SmartCardFinder(fname)
+	if err != nil {
+		return "", err
+	}
+	idx.SetCurrentFile(fullpath)
+	return fullpath, nil
+}
+
+// openFileInEditor handles file creation/opening and launching the editor
+func openFileInEditor(filePath, editor string, isNew bool) error {
+	flags := os.O_RDWR
+	if isNew {
+		flags |= os.O_CREATE
 	}
 
-	cmd := exec.Command(*editor, *fname)
+	f, err := os.OpenFile(filePath, flags, 0644)
+	if err != nil {
+		if os.IsNotExist(err) && !isNew {
+			fmt.Printf("Error: File %s does not exist. If you want to create a new file with the edit command use -n flag\n", filePath)
+			return nil
+		}
+		return fmt.Errorf("opening file: %s: %w", filePath, err)
+	}
+	defer f.Close()
 
-	// Connect editor to terminal's stdin/stdout/stderr
+	cmd := exec.Command(editor, filePath)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
-	// Run editor and wait until user exits
-	err := cmd.Run()
-	if err != nil {
-		return fmt.Errorf("running editor: %s: %w", *editor, err)
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("running editor: %s: %w", editor, err)
 	}
+
 	fmt.Println("Editing finished!")
-
-	idx.currentCard = *fname
-
 	return nil
-
 }

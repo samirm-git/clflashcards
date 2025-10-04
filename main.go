@@ -9,8 +9,6 @@ import (
 	"github.com/samirm-git/clflashcards/flashcards"
 )
 
-var editorOptions = map[string]bool{"vim": true}
-
 func main() {
 
 	idx, err := flashcards.BuildFlashcardIndex()
