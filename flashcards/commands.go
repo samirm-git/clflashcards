@@ -31,13 +31,13 @@ func runSelectFlashCardGUI(idx *FlashcardIndex) error {
 	return nil
 }
 
-func saveFlashcard(idx *FlashcardIndex, question, answer string) error {
+func saveFlashcard(savePath, question, answer string) error {
 	// Open the file in append mode, creating it if it doesn't exist
-	f, err := os.OpenFile(idx.currentCard, os.O_APPEND|os.O_WRONLY, 0644)
+	f, err := os.OpenFile(savePath, os.O_APPEND|os.O_WRONLY, 0644)
 	if os.IsNotExist(err) {
-		return fmt.Errorf("saving file %s  but file does not exist: %w", idx.currentCard, err)
+		return fmt.Errorf("saving file %s  but file does not exist: %w", savePath, err)
 	} else if err != nil {
-		return fmt.Errorf("opening file %s : %w", idx.currentCard, err)
+		return fmt.Errorf("opening file %s : %w", savePath, err)
 	}
 	defer f.Close()
 
@@ -45,7 +45,7 @@ func saveFlashcard(idx *FlashcardIndex, question, answer string) error {
 	entry := fmt.Sprintf("%s | %s\n", question, answer)
 	_, err = f.WriteString(entry)
 	if err != nil {
-		return fmt.Errorf("saving %s : %w", idx.currentCard, err)
+		return fmt.Errorf("saving %s : %w", savePath, err)
 	} else {
 		fmt.Println("Flashcard saved successfully")
 	}
@@ -66,38 +66,49 @@ func runShow(idx *FlashcardIndex, args []string) error {
 }
 
 func runCreate(idx *FlashcardIndex, qaArgs []string) error {
+	createfs := pflag.NewFlagSet("create", pflag.ContinueOnError)
+	question := createfs.StringP("question", "q", "", "flashcard question")
+	answer := createfs.StringP("answer", "a", "", "flashcard answer")
+
+	if err := createfs.Parse(qaArgs); err != nil {
+		return fmt.Errorf("parsing qaArgs: %w", err)
+	}
+
 	if len(qaArgs) < 2 {
 		scanner := bufio.NewScanner(os.Stdin)
 		for {
 			fmt.Println("Enter a question or 'quit' to quit")
-			question, err := getUserInput(idx.currentCard, *scanner)
+			questionScanner, err := getUserInput(idx.currentCard, *scanner)
 
 			if err != nil {
-				return fmt.Errorf("parsing question %s: %w", question, err)
-			} else if checkQuit(question) {
-				break
+				return fmt.Errorf("parsing question %s: %w", questionScanner, err)
+			} else if checkQuit(questionScanner) {
+				return nil
 			}
 
 			fmt.Println("Enter an answer or 'quit' to quit")
-			answer, err := getUserInput(idx.currentCard, *scanner)
+			answerScanner, err := getUserInput(idx.currentCard, *scanner)
 			if err != nil {
-				return fmt.Errorf("parsing answer %s: %w", answer, err)
-			} else if checkQuit(answer) {
-				break
+				return fmt.Errorf("parsing answer %s: %w", answerScanner, err)
+			} else if checkQuit(answerScanner) {
+				return nil
 			}
 
-			err = saveFlashcard(idx, question, answer)
+			err = saveFlashcard(idx.currentCard, questionScanner, answerScanner)
 			if err != nil {
 				return fmt.Errorf("saving question  %s  and answer  %q  : %w", question, answer, err)
 			}
 		}
-	} else {
-		question := qaArgs[0]
-		answer := qaArgs[1]
-		err := saveFlashcard(idx, question, answer)
-		if err != nil {
-			return fmt.Errorf("saving question  %s  and answer  %q  : %w", question, answer, err)
-		}
+	}
+
+	if *question == "" || *answer == "" {
+		*question = qaArgs[0]
+		*answer = qaArgs[1]
+	}
+
+	err := saveFlashcard(idx.currentCard, *question, *answer)
+	if err != nil {
+		return fmt.Errorf("saving question  %s  and answer  %q  : %w", *question, *answer, err)
 	}
 	return nil
 }

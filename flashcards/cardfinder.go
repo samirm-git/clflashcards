@@ -10,6 +10,7 @@ import (
 func (idx *FlashcardIndex) SmartCardFinder(inputPath string) (string, error) {
 	var err error
 	masterStore, err := filepath.Abs(idx.MasterStore)
+	fmt.Println("masterStore", masterStore)
 	if err != nil {
 		return "", err
 	}
@@ -46,15 +47,13 @@ func (idx *FlashcardIndex) SmartCardFinder(inputPath string) (string, error) {
 				}
 				cardFinder = parent
 				parent = filepath.Dir(cardFinder)
-
 			}
-
-			candidatePath := filepath.Clean(filepath.Join(masterStore, inputPath))
-			if isCardInIndex(idx, candidatePath) {
-				return candidatePath, nil
-			}
-			return "", fmt.Errorf("file not found: %s (tried active path ancestors and masterStore)", inputPath)
 		}
+		candidatePath := filepath.Clean(filepath.Join(masterStore, inputPath))
+		if isCardInIndex(idx, candidatePath) {
+			return candidatePath, nil
+		}
+		return "", fmt.Errorf("file not found: %s (tried active path ancestors and masterStore)", inputPath)
 
 	} else {
 		// 3) No path separator -> prefer active directory first
