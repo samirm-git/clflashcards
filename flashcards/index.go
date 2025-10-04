@@ -1,7 +1,6 @@
 package flashcards
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 )
@@ -44,10 +43,10 @@ func BuildFlashcardIndex() (*FlashcardIndex, error) {
 		return nil, err
 	}
 
-	for dir, files := range idx.FilesByDir {
-		fmt.Printf("Directory: %s\n", dir)
-		fmt.Printf("  Files: %v\n", files)
-		fmt.Println()
-	}
+	// for dir, files := range idx.FilesByDir {
+	// 	fmt.Printf("Directory: %s\n", dir)
+	// 	fmt.Printf("  Files: %v\n", files)
+	// 	fmt.Println()
+	// }
 	return idx, nil
 }

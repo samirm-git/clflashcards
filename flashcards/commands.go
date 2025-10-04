@@ -12,15 +12,14 @@ import (
 )
 
 func runSelectFlashCard(idx *FlashcardIndex, path string) error {
-	shortened_path := addTxtExtension(removeStoreFromPath(path))
-	abspath := filepath.Join(getStorePath(), shortened_path)
+	path = addTxtExtension(path)
+	abspath, err := idx.SmartCardFinder(path)
 
-	if _, err := os.Stat(abspath); err == nil {
-		idx.SetCurrentFile(abspath)
-	} else {
-		return fmt.Errorf("filenotfound %s: %w", abspath, err)
+	if err != nil {
+		return fmt.Errorf("selecting flashcard  %s  : %w", path, err)
 	}
 
+	idx.SetCurrentFile(abspath)
 	fmt.Println("Successfully selected file.")
 	return nil
 }
@@ -113,10 +112,10 @@ func runEditFile(idx *FlashcardIndex, args []string) error {
 		return fmt.Errorf("parsing args: %w", err)
 	}
 
-	if !editfs.Changed("filename") {
+	if !editfs.Changed("filename") { //filename flag argument is not provided
 		positionalArgs := editfs.Args()
 		if len(positionalArgs) > 0 {
-			*fname = positionalArgs[0]
+			*fname = positionalArgs[0] //check positional argument for filename
 		} else {
 			*fname = idx.currentCard
 		}
@@ -124,7 +123,7 @@ func runEditFile(idx *FlashcardIndex, args []string) error {
 		if *fname == "" {
 			fmt.Println(`NO FILE SELECTED. Either use:
 									1)  '-f' flag and specify file 
-									or 2)	specify file without '-f' as first arg after 'edit' 
+									or 2)	specify file without '-f' as first positional arg after 'edit' 
 									or 3) use 'select' to change current flashcard.`)
 			return nil
 		}
@@ -132,10 +131,10 @@ func runEditFile(idx *FlashcardIndex, args []string) error {
 	} else { //fname is specified
 		*fname = addTxtExtension(*fname)
 		fullcardpath, err := idx.SmartCardFinder(*fname)
-		idx.SetCurrentFile(fullcardpath)
 		if err != nil {
 			return err
 		}
+		idx.SetCurrentFile(fullcardpath)
 		*fname = fullcardpath
 	}
 

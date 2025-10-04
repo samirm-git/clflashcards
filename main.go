@@ -12,12 +12,7 @@ import (
 var editorOptions = map[string]bool{"vim": true}
 
 func main() {
-	// config, err := loadConfig("config.json")
-	// if err != nil {
-	// 	fmt.Println("Error loading config:", err)
-	// 	os.Exit(1)
-	// }
-	// Define command-line flags
+
 	idx, err := flashcards.BuildFlashcardIndex()
 	for dir, files := range idx.FilesByDir {
 		fmt.Printf("Directory: %s\n", dir)

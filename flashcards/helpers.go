@@ -67,6 +67,14 @@ func addTxtExtension(fname string) string {
 	return fname
 }
 
+func getLastDirAndFilename(path string) string {
+	path = filepath.Clean(path)
+	lastDir := filepath.Base(filepath.Dir(path))
+	filename := filepath.Base(path)
+
+	return filepath.Join(lastDir, filename)
+}
+
 func introPrint() {
 	fmt.Println(`   ________       ________           __                        __
   / ____/ /      / ____/ /___ ______/ /_  _________ __________/ /____
@@ -84,7 +92,7 @@ func printPrompt(currentCard string) {
 		fmt.Print("clflashcards> ")
 	} else {
 		colour := color.New(color.FgCyan).SprintFunc()
-		fmt.Printf("clflashcards %s> ", colour(filepath.Base(currentCard)))
+		fmt.Printf("clflashcards %s> ", colour(getLastDirAndFilename(currentCard)))
 	}
 }
 

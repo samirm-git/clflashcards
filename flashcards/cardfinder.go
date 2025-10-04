@@ -29,6 +29,7 @@ func (idx *FlashcardIndex) SmartCardFinder(inputPath string) (string, error) {
 		if isFileExists {
 			return inputPath, nil
 		}
+		return "", fmt.Errorf("absolute path not found %s", inputPath)
 
 	} else if strings.Contains(inputPath, string(os.PathSeparator)) {
 		// 2) inputPath contains path separators -> try ancestor-aware resolution from active dir back to its parents
@@ -43,11 +44,9 @@ func (idx *FlashcardIndex) SmartCardFinder(inputPath string) (string, error) {
 				if isCardInIndex(idx, candidatePath) {
 					return candidatePath, nil
 				}
-				parent = filepath.Dir(cardFinder)
-				if parent == cardFinder {
-					break
-				}
 				cardFinder = parent
+				parent = filepath.Dir(cardFinder)
+
 			}
 
 			candidatePath := filepath.Clean(filepath.Join(masterStore, inputPath))
@@ -69,8 +68,6 @@ func (idx *FlashcardIndex) SmartCardFinder(inputPath string) (string, error) {
 }
 
 func isCardInIndex(idx *FlashcardIndex, flashcard string) bool {
-	//ONLY CHECKING IF THE DIR PATH GIVEN IN INPUT (SMART ADJUSTED) EXSITS IN INDEX
-	//NOT CHECKING IF THE LAST PART I.E. FILE NAME MATCHES WITH A VALUE IN THE INDEX[DIR_PATH]
 	cardDirPath := filepath.Dir(flashcard)
 	if _, ok := idx.FilesByDir[cardDirPath]; ok {
 		flashcard_name := filepath.Base(flashcard)
