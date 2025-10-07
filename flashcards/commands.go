@@ -3,13 +3,21 @@ package flashcards
 import (
 	"bufio"
 	"fmt"
+	"math/rand"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
+	"time"
 
 	"github.com/AEROGU/tvchooser"
 	"github.com/spf13/pflag"
 )
+
+type Flashcard struct {
+	Question string
+	Answer   string
+}
 
 func runSelectFlashCard(idx *FlashcardIndex, path string) error {
 	path = addTxtExtension(path)
@@ -53,6 +61,7 @@ func saveFlashcard(savePath, question, answer string) error {
 }
 
 func runShow(idx *FlashcardIndex, args []string) error {
+
 	if idx.currentCard == "" {
 		fmt.Println("NO FILE SELECTED. Use 'select' or 'edit' to change current flashcard.")
 		return nil
@@ -96,7 +105,7 @@ func runCreate(idx *FlashcardIndex, qaArgs []string) error {
 
 			err = saveFlashcard(idx.currentCard, questionScanner, answerScanner)
 			if err != nil {
-				return fmt.Errorf("saving question  %s  and answer  %q  : %w", question, answer, err)
+				return fmt.Errorf("saving question  %s  and answer  %q  : %w", *question, *answer, err)
 			}
 		}
 	}
@@ -111,6 +120,78 @@ func runCreate(idx *FlashcardIndex, qaArgs []string) error {
 		return fmt.Errorf("saving question  %s  and answer  %q  : %w", *question, *answer, err)
 	}
 	return nil
+}
+
+func runTestme(idx *FlashcardIndex, args []string) error {
+	testmefs := pflag.NewFlagSet("testme", pflag.ContinueOnError)
+	isRandomOrder := testmefs.BoolP("random", "r", false, "Flag to set question order to random")
+	nquestions := testmefs.IntP("numberOfQuestion", "n", -1, "Number of questions to test")
+
+	if err := testmefs.Parse(args); err != nil {
+		return fmt.Errorf("parsing args: %w", err)
+	}
+
+	if idx.currentCard == "" {
+		return fmt.Errorf("No card currently selected")
+	}
+
+	cards, err := parseFlashcardFile(idx.currentCard)
+	if err != nil {
+		return err
+	}
+
+	if *isRandomOrder {
+		r := rand.New(rand.NewSource(time.Now().UnixNano()))
+		r.Shuffle(len(cards), func(i, j int) { cards[i], cards[j] = cards[j], cards[i] })
+	}
+
+	if *nquestions <= 0 || *nquestions > len(cards) {
+		*nquestions = len(cards)
+	}
+
+	scanner := bufio.NewScanner(os.Stdin)
+	for i, card := range cards[:*nquestions] {
+		fmt.Printf("\nQuestion %d/%d: %s\n", i+1, *nquestions, card.Question)
+		fmt.Println("Your answer (or type 'quit' to exit): ")
+
+		answerInput, err := getUserInput(idx.currentCard, *scanner)
+		if err != nil {
+			return fmt.Errorf("parsing answer input %s: %w", answerInput, err)
+		} else if checkQuit(answerInput) {
+			return nil
+		}
+		fmt.Println("Correct Answer:")
+		fmt.Printf(" %s \n", card.Answer)
+	}
+
+	return nil
+}
+
+func parseFlashcardFile(fname string) ([]Flashcard, error) {
+	f, err := os.Open(fname)
+	if err != nil {
+		return nil, fmt.Errorf("opening file %s: %w", fname, err)
+	}
+	defer f.Close()
+	var cards []Flashcard
+	scanner := bufio.NewScanner(f)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		parts := strings.SplitN(line, "|", 2)
+		if len(parts) != 2 {
+			continue // skip malformed lines
+		}
+		question := strings.TrimSpace(parts[0])
+		answer := strings.TrimSpace(parts[1])
+		cards = append(cards, Flashcard{Question: question, Answer: answer})
+	}
+
+	if err := scanner.Err(); err != nil {
+		return nil, fmt.Errorf("reading file %s: %w", fname, err)
+	} else {
+		return cards, nil
+	}
 }
 
 func runEditFileGUI(idx *FlashcardIndex, args []string) error {
@@ -182,7 +263,6 @@ func resolveFileName(idx *FlashcardIndex, editfs *pflag.FlagSet, fname string) (
 		if fname == "" {
 			return "", nil
 		}
-		return fname, nil
 	}
 
 	// Filename provided with -f flag

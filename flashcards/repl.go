@@ -16,6 +16,7 @@ var commands = map[string]CommandFunc{
 	"show":      func(idx *FlashcardIndex, args []string) error { return runShow(idx, args) },
 	"edit":      func(idx *FlashcardIndex, args []string) error { return runEditFile(idx, args) },
 	"editgui":   func(idx *FlashcardIndex, args []string) error { return runEditFileGUI(idx, args) },
+	"testme":    func(idx *FlashcardIndex, args []string) error { return runTestme(idx, args) },
 	"selectgui": func(idx *FlashcardIndex, args []string) error { return runSelectFlashCardGUI(idx) },
 	"select": func(idx *FlashcardIndex, args []string) error {
 		if len(args) == 0 {
