@@ -87,6 +87,11 @@ func introPrint() {
 	fmt.Println("Enter command or 'help' for the available commands.")
 }
 
+func printPromptCommand(command string) {
+	colour := color.New(color.FgHiGreen).SprintFunc()
+	fmt.Printf("  %s> ", colour(command))
+}
+
 func printPrompt(currentCard string) {
 	if currentCard == "" {
 		fmt.Print("clflashcards> ")
@@ -96,8 +101,9 @@ func printPrompt(currentCard string) {
 	}
 }
 
-func getUserInput(currentCard string, scanner bufio.Scanner) (string, error) {
-	printPrompt(currentCard)
+func getUserInput(currentCard string, scanner bufio.Scanner, command string) (string, error) {
+	//currentCard not used. Remove later if this is still the case
+	printPromptCommand(command)
 	scanner.Scan()
 	if err := scanner.Err(); err != nil {
 		return "", fmt.Errorf("awaiting input:  %w", err)

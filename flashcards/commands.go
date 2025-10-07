@@ -87,7 +87,7 @@ func runCreate(idx *FlashcardIndex, qaArgs []string) error {
 		scanner := bufio.NewScanner(os.Stdin)
 		for {
 			fmt.Println("Enter a question or 'quit' to quit")
-			questionScanner, err := getUserInput(idx.currentCard, *scanner)
+			questionScanner, err := getUserInput(idx.currentCard, *scanner, "question")
 
 			if err != nil {
 				return fmt.Errorf("parsing question %s: %w", questionScanner, err)
@@ -96,7 +96,7 @@ func runCreate(idx *FlashcardIndex, qaArgs []string) error {
 			}
 
 			fmt.Println("Enter an answer or 'quit' to quit")
-			answerScanner, err := getUserInput(idx.currentCard, *scanner)
+			answerScanner, err := getUserInput(idx.currentCard, *scanner, "answer")
 			if err != nil {
 				return fmt.Errorf("parsing answer %s: %w", answerScanner, err)
 			} else if checkQuit(answerScanner) {
@@ -154,7 +154,7 @@ func runTestme(idx *FlashcardIndex, args []string) error {
 		fmt.Printf("\nQuestion %d/%d: %s\n", i+1, *nquestions, card.Question)
 		fmt.Println("Your answer (or type 'quit' to exit): ")
 
-		answerInput, err := getUserInput(idx.currentCard, *scanner)
+		answerInput, err := getUserInput(idx.currentCard, *scanner, "answer")
 		if err != nil {
 			return fmt.Errorf("parsing answer input %s: %w", answerInput, err)
 		} else if checkQuit(answerInput) {
