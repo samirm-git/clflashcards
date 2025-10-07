@@ -132,7 +132,7 @@ func runTestme(idx *FlashcardIndex, args []string) error {
 	}
 
 	if idx.currentCard == "" {
-		return fmt.Errorf("No card currently selected")
+		return fmt.Errorf("no card currently selected")
 	}
 
 	cards, err := parseFlashcardFile(idx.currentCard)
