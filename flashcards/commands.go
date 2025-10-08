@@ -160,8 +160,10 @@ func runTestme(idx *FlashcardIndex, args []string) error {
 		} else if checkQuit(answerInput) {
 			return nil
 		}
+		fmt.Println("")
 		fmt.Println("Correct Answer:")
-		fmt.Printf(" %s \n", card.Answer)
+		fmt.Print("  ")
+		fmt.Printf("%s \n", card.Answer)
 	}
 
 	return nil
