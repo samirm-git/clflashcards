@@ -13,7 +13,7 @@ func (idx *FlashcardIndex) SmartCardFinder(inputPath string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	currentCard, err := filepath.Abs(idx.currentCard)
+	currentCard, err := filepath.Abs(idx.CurrentCard)
 	if err != nil {
 		return "", err
 	}

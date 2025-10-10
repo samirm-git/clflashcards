@@ -10,16 +10,11 @@ import (
 func main() {
 
 	idx, err := flashcards.BuildFlashcardIndex()
-	for dir, files := range idx.FilesByDir {
-		fmt.Printf("Directory: %s\n", dir)
-		fmt.Printf("  Files: %v\n", files)
-		fmt.Println()
-	}
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
 	}
 
-	flashcards.RunREPL(idx)
+	RunREPL(idx)
 
 }

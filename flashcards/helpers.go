@@ -75,7 +75,7 @@ func getLastDirAndFilename(path string) string {
 	return filepath.Join(lastDir, filename)
 }
 
-func introPrint() {
+func IntroPrint() {
 	fmt.Println(`   ________       ________           __                        __
   / ____/ /      / ____/ /___ ______/ /_  _________ __________/ /____
  / /   / /      / /_  / / __ |/ ___/ __ \/ ___/ __ |/ ___/ __  / ___/
@@ -92,7 +92,7 @@ func printPromptCommand(command string) {
 	fmt.Printf("  %s> ", colour(command))
 }
 
-func printPrompt(currentCard string) {
+func PrintPrompt(currentCard string) {
 	if currentCard == "" {
 		fmt.Print("clflashcards> ")
 	} else {
@@ -113,7 +113,7 @@ func getUserInput(currentCard string, scanner bufio.Scanner, command string) (st
 	}
 }
 
-func checkQuit(text string) bool {
+func CheckQuit(text string) bool {
 	if strings.ToLower(strings.TrimSpace(text)) == "quit" || strings.TrimSpace(strings.ToLower(text)) == "q" {
 		return true
 	}
