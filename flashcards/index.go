@@ -7,12 +7,12 @@ import (
 
 type FlashcardIndex struct {
 	MasterStore string
-	currentCard string
+	CurrentCard string
 	FilesByDir  map[string][]string
 }
 
 func (idx *FlashcardIndex) SetCurrentFile(filepath string) {
-	idx.currentCard = filepath
+	idx.CurrentCard = filepath
 }
 
 func (idx *FlashcardIndex) walkFunc(path string, entry os.DirEntry, walkErr error) error {
@@ -34,7 +34,7 @@ func (idx *FlashcardIndex) walkFunc(path string, entry os.DirEntry, walkErr erro
 func BuildFlashcardIndex() (*FlashcardIndex, error) {
 	idx := &FlashcardIndex{
 		MasterStore: getStorePath(),
-		currentCard: "",
+		CurrentCard: "",
 		FilesByDir:  make(map[string][]string),
 	}
 
