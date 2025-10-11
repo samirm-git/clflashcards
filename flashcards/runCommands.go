@@ -50,7 +50,7 @@ func saveFlashcard(savePath, question, answer string) error {
 	defer f.Close()
 
 	// Write the flashcard entry
-	entry := fmt.Sprintf("%s | %s\n", question, answer)
+	entry := fmt.Sprintf("\n%s | %s", question, answer)
 	_, err = f.WriteString(entry)
 	if err != nil {
 		return fmt.Errorf("saving %s : %w", savePath, err)
@@ -81,6 +81,10 @@ func runCreate(idx *FlashcardIndex, qaArgs []string) error {
 
 	if err := createfs.Parse(qaArgs); err != nil {
 		return fmt.Errorf("parsing qaArgs: %w", err)
+	}
+
+	if idx.CurrentCard == "" {
+		return fmt.Errorf("no card currently selected")
 	}
 
 	if len(qaArgs) < 2 {
