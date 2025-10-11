@@ -6,7 +6,7 @@ import (
 	"math/rand"
 	"os"
 	"os/exec"
-	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -61,16 +61,45 @@ func saveFlashcard(savePath, question, answer string) error {
 }
 
 func runShow(idx *FlashcardIndex, args []string) error {
-
+	n := 10000000000
+	if len(args) > 0 {
+		var err error
+		n, err = strconv.Atoi(args[0])
+		if err != nil {
+			return fmt.Errorf("not a valid number: %s", args[0])
+		}
+	}
 	if idx.CurrentCard == "" {
 		fmt.Println("NO FILE SELECTED. Use 'select' or 'edit' to change current flashcard.")
 		return nil
 	}
-	content, err := os.ReadFile(idx.CurrentCard)
+
+	cards, err := parseFlashcardFile(idx.CurrentCard)
 	if err != nil {
-		return fmt.Errorf("error reading file %s: %w", filepath.Base(idx.CurrentCard), err)
+		return err
 	}
-	fmt.Println("Flashcards:\n", string(content))
+
+	var selected []Flashcard
+	if n > 0 {
+		if n > len(cards) {
+			n = len(cards)
+		}
+		selected = cards[:n]
+	} else if n < 0 {
+		n = -(n)
+		if n > len(cards) {
+			n = len(cards)
+		}
+		selected = cards[len(cards)-n:]
+	} else {
+		selected = []Flashcard{}
+	}
+
+	fmt.Println("\nFlashcards:")
+	for i, c := range selected {
+		fmt.Printf("  %d. Q: %s\n     A: %s\n\n", i+1, c.Question, c.Answer)
+	}
+
 	return nil
 }
 

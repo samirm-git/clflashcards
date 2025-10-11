@@ -39,8 +39,8 @@ func helpSelectGui() {
 }
 
 func helpShow() {
-	fmt.Printf(`  %s
-	STILL IN PROGRESS.`, helpCommandColour("show"))
+	fmt.Printf(`  %s [n]
+	Show n (or all) flashcards in the current file.`, helpCommandColour("show"))
 	fmt.Println()
 }
 
