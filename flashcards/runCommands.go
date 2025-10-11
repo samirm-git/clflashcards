@@ -161,8 +161,9 @@ func runTestme(idx *FlashcardIndex, args []string) error {
 			return nil
 		}
 		fmt.Println()
-		fmt.Print("  True Answer:")
-		fmt.Printf("%s \n", card.Answer)
+		fmt.Println("  True Answer:", card.Answer)
+		fmt.Println("Press Enter to continue to the next question")
+		scanner.Scan()
 	}
 
 	return nil
