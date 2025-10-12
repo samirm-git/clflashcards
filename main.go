@@ -9,7 +9,7 @@ import (
 
 func main() {
 
-	idx, err := flashcards.BuildFlashcardIndex()
+	idx, err := flashcards.BuildFlashcardIndex(nil)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)

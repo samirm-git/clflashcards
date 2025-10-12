@@ -320,7 +320,7 @@ func openFileInEditor(filePath, editor string, isNew bool) error {
 	f, err := os.OpenFile(filePath, flags, 0644)
 	if err != nil {
 		if os.IsNotExist(err) && !isNew {
-			fmt.Printf("Error: File %s does not exist. If you want to create a new file with the edit command use -n flag\n", filePath)
+			fmt.Printf("Error: File %s does not exist. if you want to create a new file you can use the edit command with -n flag\n Or new dir created and index is not up to date. Run refresh to update index. \n", filePath)
 			return nil
 		}
 		return fmt.Errorf("opening file: %s: %w", filePath, err)
@@ -360,4 +360,12 @@ func runHelp(idx *FlashcardIndex, args []string) error {
 	}
 	return nil
 
+}
+
+func runRefresh(idx *FlashcardIndex, args []string) error {
+	_, err := BuildFlashcardIndex(idx)
+	if err != nil {
+		fmt.Errorf("attempting to refresh index: %w", err)
+	}
+	return nil
 }

@@ -31,22 +31,30 @@ func (idx *FlashcardIndex) walkFunc(path string, entry os.DirEntry, walkErr erro
 	return nil
 }
 
-func BuildFlashcardIndex() (*FlashcardIndex, error) {
-	idx := &FlashcardIndex{
-		MasterStore: getStorePath(),
-		CurrentCard: "",
-		FilesByDir:  make(map[string][]string),
+func BuildFlashcardIndex(idx *FlashcardIndex) (*FlashcardIndex, error) {
+	// If nil, create a new instance
+	if idx == nil {
+		idx = &FlashcardIndex{
+			MasterStore: getStorePath(),
+			CurrentCard: "",
+			FilesByDir:  make(map[string][]string),
+		}
+	} else {
+		// Ensure FilesByDir is initialized
+		if idx.FilesByDir == nil {
+			idx.FilesByDir = make(map[string][]string)
+		}
+
+		for k := range idx.FilesByDir {
+			delete(idx.FilesByDir, k)
+		}
 	}
 
+	// Walk through the directory and update index
 	err := filepath.WalkDir(idx.MasterStore, idx.walkFunc)
 	if err != nil {
 		return nil, err
 	}
 
-	// for dir, files := range idx.FilesByDir {
-	// 	fmt.Printf("Directory: %s\n", dir)
-	// 	fmt.Printf("  Files: %v\n", files)
-	// 	fmt.Println()
-	// }
 	return idx, nil
 }
