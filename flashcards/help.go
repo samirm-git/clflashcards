@@ -55,3 +55,9 @@ func helpHelp() {
 	Show help option. Optional argument for help on a specific [command]`, helpCommandColour("help"))
 	fmt.Println()
 }
+
+func helpReresh() {
+	fmt.Printf(`  %s
+	Refresh flascard file index. Run this if you create or delete flashcard files.`, helpCommandColour("refresh"))
+	fmt.Println()
+}

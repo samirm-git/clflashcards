@@ -38,6 +38,12 @@ var commandsMap = map[string]*Command{
 		Run:         runTestme,
 		RunHelp:     helpTestMe,
 	},
+	"refresh": {
+		Name:        "refresh",
+		Description: "build flashcard file index again",
+		Run:         runRefresh,
+		RunHelp:     helpReresh,
+	},
 	"select": {
 		Name:        "select",
 		Description: "Select a flashcard (or open GUI if no args)",
