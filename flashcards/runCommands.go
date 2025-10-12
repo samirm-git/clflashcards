@@ -365,7 +365,7 @@ func runHelp(idx *FlashcardIndex, args []string) error {
 func runRefresh(idx *FlashcardIndex, args []string) error {
 	_, err := BuildFlashcardIndex(idx)
 	if err != nil {
-		fmt.Errorf("attempting to refresh index: %w", err)
+		return fmt.Errorf("attempting to refresh index: %w", err)
 	}
 	return nil
 }
