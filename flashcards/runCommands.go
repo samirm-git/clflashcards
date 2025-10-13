@@ -61,7 +61,7 @@ func saveFlashcard(savePath, question, answer string) error {
 }
 
 func runShow(idx *FlashcardIndex, args []string) error {
-	n := 10000000000
+	n := 10000
 	if len(args) > 0 {
 		var err error
 		n, err = strconv.Atoi(args[0])
