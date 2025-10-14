@@ -15,6 +15,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	RunREPL(idx)
+	RunREPL2(idx)
 
 }
