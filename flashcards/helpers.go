@@ -101,6 +101,16 @@ func PrintPrompt(currentCard string) {
 	}
 }
 
+func GetPrompt(currentCard string) string {
+	if currentCard == "" {
+		return "clflashcards> "
+	} else {
+		colour := color.New(color.FgCyan).SprintFunc()
+		prompt := fmt.Sprintf("clflashcards %s> ", colour(getLastDirAndFilename(currentCard)))
+		return prompt
+	}
+}
+
 func getUserInput(currentCard string, scanner bufio.Scanner, command string) (string, error) {
 	//currentCard not used. Remove later if this is still the case
 	printPromptCommand(command)

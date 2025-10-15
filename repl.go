@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/chzyer/readline"
@@ -13,8 +14,8 @@ import (
 
 func RunREPL2(idx *flashcards.FlashcardIndex) {
 	rl, err := readline.NewEx(&readline.Config{
-		Prompt:          "clflashcards> ",
-		HistoryFile:     "/tmp/flashcards_history.tmp", // saves command history
+		Prompt:          flashcards.GetPrompt(""),
+		HistoryFile:     filepath.Join(os.TempDir(), "flashcards_history.tmp"), // saves command history
 		InterruptPrompt: "^C",
 		EOFPrompt:       "exit",
 	})
@@ -23,7 +24,10 @@ func RunREPL2(idx *flashcards.FlashcardIndex) {
 	}
 	defer rl.Close()
 	rl.CaptureExitSignal()
+
+	flashcards.IntroPrint()
 	for {
+		rl.SetPrompt(flashcards.GetPrompt(idx.CurrentCard))
 		line, err := rl.Readline()
 		if err != nil { // io.EOF or readline.ErrInterrupt
 			break
@@ -32,7 +36,13 @@ func RunREPL2(idx *flashcards.FlashcardIndex) {
 		if flashcards.CheckQuit(line) {
 			break
 		}
-
+		args, err := shlex.Split(line)
+		if err != nil {
+			fmt.Println("Unexpected Error parsing input :", err)
+			continue
+		}
+		DispatchCommand(idx, args)
+		fmt.Println()
 		fmt.Printf("You entered: %s\n", line)
 	}
 
