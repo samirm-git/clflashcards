@@ -58,4 +58,5 @@ This project is licensed under the GNU GENERAL PUBLIC LICENSE License - see the 
 
 ## Acknowledgments
 
-* [tvchooser](https://github.com/AEROGU/tvchooser/blob/main/gui.go)
+* [tvchooser](https://github.com/AEROGU/tvchooser/)
+* [readline](https://github.com/chzyer/readline)
