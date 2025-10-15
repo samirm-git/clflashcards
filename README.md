@@ -44,6 +44,10 @@ refresh
 
 ## Version History
 
+* 1.1.1
+  * Cleanup
+* 1.1.0
+   * Improved REPL with arrow key scrolling
 * 1.0.0
     * Initial Release
 
