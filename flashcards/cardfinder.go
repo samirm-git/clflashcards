@@ -56,8 +56,6 @@ func (idx *FlashcardIndex) SmartCardFinder(inputPath string) (string, error) {
 		return "", fmt.Errorf("file not found: %s (tried active path ancestors and masterStore)", inputPath)
 
 	}
-
-	return "", fmt.Errorf("could not find input in flashcard store : %s", inputPath)
 }
 
 func isCardInIndex(idx *FlashcardIndex, flashcard string) bool {
