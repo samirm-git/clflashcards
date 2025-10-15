@@ -10,7 +10,7 @@ import (
 	"github.com/samirm-git/clflashcards/flashcards"
 )
 
-func RunREPL2(idx *flashcards.FlashcardIndex) {
+func RunREPL(idx *flashcards.FlashcardIndex) {
 	rl, err := readline.NewEx(&readline.Config{
 		Prompt:          flashcards.GetPrompt(""),
 		HistoryFile:     filepath.Join(os.TempDir(), "flashcards_history.tmp"), // saves command history
@@ -41,7 +41,6 @@ func RunREPL2(idx *flashcards.FlashcardIndex) {
 		}
 		DispatchCommand(idx, args)
 		fmt.Println()
-		fmt.Printf("You entered: %s\n", line)
 	}
 
 }
