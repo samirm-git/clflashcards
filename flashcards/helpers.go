@@ -92,15 +92,6 @@ func printPromptCommand(command string) {
 	fmt.Printf("  %s> ", colour(command))
 }
 
-func PrintPrompt(currentCard string) {
-	if currentCard == "" {
-		fmt.Print("clflashcards> ")
-	} else {
-		colour := color.New(color.FgCyan).SprintFunc()
-		fmt.Printf("clflashcards %s> ", colour(getLastDirAndFilename(currentCard)))
-	}
-}
-
 func GetPrompt(currentCard string) string {
 	if currentCard == "" {
 		return "clflashcards> "

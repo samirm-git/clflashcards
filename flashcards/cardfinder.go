@@ -31,7 +31,8 @@ func (idx *FlashcardIndex) SmartCardFinder(inputPath string) (string, error) {
 		}
 		return "", fmt.Errorf("absolute path not found %s", inputPath)
 
-	} else if strings.Contains(inputPath, string(os.PathSeparator)) {
+		// else if strings.Contains(inputPath, string(os.PathSeparator))
+	} else {
 		// 2) inputPath contains path separators -> try ancestor-aware resolution from active dir back to its parents
 
 		if isSubpath(masterStore, activeDir) {
@@ -54,12 +55,6 @@ func (idx *FlashcardIndex) SmartCardFinder(inputPath string) (string, error) {
 		}
 		return "", fmt.Errorf("file not found: %s (tried active path ancestors and masterStore)", inputPath)
 
-	} else {
-		// 3) No path separator -> prefer active directory first
-		candidatePath := filepath.Clean(filepath.Join(activeDir, inputPath))
-		if isCardInIndex(idx, candidatePath) {
-			return candidatePath, nil
-		}
 	}
 
 	return "", fmt.Errorf("could not find input in flashcard store : %s", inputPath)

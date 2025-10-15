@@ -1,11 +1,9 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/chzyer/readline"
 	"github.com/google/shlex"
@@ -46,36 +44,6 @@ func RunREPL2(idx *flashcards.FlashcardIndex) {
 		fmt.Printf("You entered: %s\n", line)
 	}
 
-}
-
-func RunREPL(idx *flashcards.FlashcardIndex) {
-
-	flashcards.IntroPrint()
-	for {
-		flashcards.PrintPrompt(idx.CurrentCard)
-		scanner := bufio.NewScanner(os.Stdin)
-		scanner.Scan()
-		if err := scanner.Err(); err != nil {
-			fmt.Println("Error getting command: ", err)
-			break
-		}
-
-		commandText := strings.TrimSpace(scanner.Text())
-
-		if commandText == "" {
-			continue
-		}
-		if flashcards.CheckQuit(commandText) {
-			break
-		}
-		args, err := shlex.Split(commandText)
-		if err != nil {
-			fmt.Println("Unexpected Error parsing input :", err)
-			continue
-		}
-		DispatchCommand(idx, args)
-		fmt.Println()
-	}
 }
 
 func DispatchCommand(idx *flashcards.FlashcardIndex, args []string) {
