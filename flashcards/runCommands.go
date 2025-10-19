@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -17,6 +18,44 @@ import (
 type Flashcard struct {
 	Question string
 	Answer   string
+}
+
+func runCreateFile(idx *FlashcardIndex, args []string) error {
+	if len(args) == 0 {
+		return fmt.Errorf("missing path argument. See 'help createFile' for more information")
+	}
+	path := filepath.Clean(addTxtExtension(args[0]))
+	if strings.Contains(path, string(os.PathSeparator)) {
+		firstDir := strings.Split(path, "/")[0]
+		if firstDir != idx.MasterStore {
+			path = filepath.Join(idx.MasterStore, path)
+		}
+	} else {
+		if idx.CurrentCard == "" {
+			path = idx.MasterStore + "/" + path
+		} else {
+			path = filepath.Join(filepath.Dir(idx.CurrentCard), path)
+		}
+	}
+
+	var err error
+	path, err = filepath.Abs(path)
+	fmt.Println(path)
+	if err != nil {
+		return fmt.Errorf("path is not well formatted: %s", path)
+	}
+
+	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+		return fmt.Errorf("failed to create directories %s: %w", filepath.Dir(path), err)
+	}
+
+	file, err := os.Create(path)
+	if err != nil {
+		return fmt.Errorf("failed to create file: %w", err)
+	}
+	defer file.Close()
+
+	return nil
 }
 
 func runSelectFlashCard(idx *FlashcardIndex, path string) error {
