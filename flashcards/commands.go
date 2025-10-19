@@ -8,6 +8,12 @@ type Command struct {
 }
 
 var commandsMap = map[string]*Command{
+	"createFile": {
+		Name:        "createFile",
+		Description: "Create a new flashcard file",
+		Run:         runCreateFile,
+		RunHelp:     helpCreateFile,
+	},
 	"create": {
 		Name:        "create",
 		Description: "Create a new flashcard",

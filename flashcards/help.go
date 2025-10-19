@@ -8,6 +8,16 @@ import (
 
 var helpCommandColour = color.New(color.FgBlue).SprintFunc()
 
+func helpCreateFile() {
+	fmt.Printf(` %s <path>
+	RECOMMENDED TO USE NORMAL SHELL COMMANDS INSTEAD e.g. 'touch' or 'New-Item'. 
+
+	Create new flashcardFile. <path> expects either absolute path from clflashcards_home or just the file name e.g. clflashcards_home/maths/unit1.txt or unit1.txt.
+	If only file name is specified then the file will be created in currently selected file dir or in clflashcards_home if no card is currently selected. 
+	If absolute path is given then the program will create any necessary dirs required.`, helpCommandColour("createFile"))
+	fmt.Println()
+}
+
 func helpCreate() {
 	fmt.Printf(`  %s [--question] [--answer]
 	Create new flashcard in currently selected flashcard file`, helpCommandColour("create"))

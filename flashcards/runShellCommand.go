@@ -16,7 +16,12 @@ func RunShellCommand(idx *FlashcardIndex, args []string) error {
 	}
 
 	if args[0] == "ls" {
-		currentDir := filepath.Dir(idx.CurrentCard)
+		var currentDir string
+		if idx.CurrentCard == "" {
+			currentDir = idx.MasterStore
+		} else {
+			currentDir = filepath.Dir(idx.CurrentCard)
+		}
 		args = append([]string{"ls", currentDir}, args[1:]...)
 	}
 
