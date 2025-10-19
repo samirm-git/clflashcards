@@ -52,7 +52,11 @@ func DispatchCommand(idx *flashcards.FlashcardIndex, args []string) {
 	cmdName := args[0]
 	cmd, ok := flashcards.GetCommand(cmdName)
 	if !ok {
-		fmt.Println("Unknown command:", cmdName)
+		err := flashcards.RunShellCommand(idx, args)
+		if err != nil {
+			fmt.Println("Unknown command:", cmdName, " attempted to run command in shell.")
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		}
 		return
 	}
 
