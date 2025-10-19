@@ -26,6 +26,8 @@ Or download zip file from releases tab
 ```
 create [--question] [--answer]
 
+createFile <path>
+
 edit [--filename] [--editor] [--isNewFile]
 
 select <path>
