@@ -45,7 +45,7 @@ func runCreateFile(idx *FlashcardIndex, args []string) error {
 		return fmt.Errorf("path is not well formatted: %s", path)
 	}
 
-	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(path), 0644); err != nil {
 		return fmt.Errorf("failed to create directories %s: %w", filepath.Dir(path), err)
 	}
 

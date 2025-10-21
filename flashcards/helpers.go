@@ -2,7 +2,6 @@ package flashcards
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -29,23 +28,6 @@ func contains[T comparable](slice []T, item T) bool {
 		}
 	}
 	return false
-}
-
-func getStoreName() string {
-	return "clflashcards_home"
-}
-
-func getStorePath() string {
-	home, _ := os.UserHomeDir()
-	flashcard_dir := filepath.Join(home, getStoreName())
-
-	if _, err := os.Stat(flashcard_dir); errors.Is(err, os.ErrNotExist) {
-		fmt.Println("===============================================================")
-		fmt.Println("Creating flashcard home...")
-		fmt.Println("===============================================================")
-		os.Mkdir(flashcard_dir, 0700)
-	}
-	return flashcard_dir
 }
 
 func removeStoreFromPath(path string) string {
