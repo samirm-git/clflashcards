@@ -54,6 +54,7 @@ func runCreateFile(idx *FlashcardIndex, args []string) error {
 		return fmt.Errorf("failed to create file: %w", err)
 	}
 	defer file.Close()
+	runRefresh(idx, nil)
 
 	return nil
 }

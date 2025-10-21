@@ -1,6 +1,7 @@
 package flashcards
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -23,6 +24,9 @@ func RunShellCommand(idx *FlashcardIndex, args []string) error {
 			currentDir = filepath.Dir(idx.CurrentCard)
 		}
 		args = append([]string{"ls", currentDir}, args[1:]...)
+
+	} else if args[0] == "cd" {
+		return fmt.Errorf("cd command not supported. Please use select to select a flashcard file")
 	}
 
 	var cmd *exec.Cmd
