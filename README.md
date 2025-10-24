@@ -2,6 +2,8 @@
 
 Simple flashcard tool entirely based in the terminal. Mouse free experience. 
 
+<video src="https://drive.google.com/file/d/1EujvxUU096P6VJBj1O9cBhrfvKwCMiqD/view?usp=sharing" width="320" height="240" controls></video>
+
 ## Description
 
 Flashcard files are simply .txt files where each line contains a question and an answer seperated by | e.g. What does GPT stand for? | Generative Pre-Trained Transformer
@@ -20,6 +22,8 @@ Flashcard files are simply .txt files where each line contains a question and an
 go install github.com/samirm-git/clflashcards@latest
 ```
 Or download zip file from releases tab
+
+**Need to add the exe file to PATH after installing**
 
 ### Commands
 
