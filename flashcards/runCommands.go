@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/AEROGU/tvchooser"
+	"github.com/samirm-git/tvchooser"
 	"github.com/spf13/pflag"
 )
 

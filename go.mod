@@ -23,9 +23,9 @@ require (
 )
 
 require (
-	github.com/AEROGU/tvchooser v1.2.1
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
+	github.com/samirm-git/tvchooser v1.2.3
 	golang.org/x/text v0.14.0 // indirect
 )
 
-replace github.com/AEROGU/tvchooser => github.com/samirm-git/tvchooser v1.2.2
+// replace github.com/AEROGU/tvchooser => github.com/samirm-git/tvchooser v1.2.2
