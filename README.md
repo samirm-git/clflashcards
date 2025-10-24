@@ -2,7 +2,8 @@
 
 Simple flashcard tool entirely based in the terminal. Mouse free experience. 
 
-<video src="https://drive.google.com/file/d/1EujvxUU096P6VJBj1O9cBhrfvKwCMiqD/view?usp=sharing" width="320" height="240" controls></video>
+[![Demo Video](https://img.shields.io/badge/▶️%20Watch%20Demo-blue)](https://drive.google.com/file/d/1EujvxUU096P6VJBj1O9cBhrfvKwCMiqD/view?usp=drive_link)
+
 
 ## Description
 
